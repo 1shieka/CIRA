@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 
-from utils.groq_client import understand_incident, generate_summary_and_timeline
+from utils.groq_client import understand_incident, generate_summary_and_timeline, investigate_incident
 from utils.classification_mapper import map_to_official_category, get_subcategory_names, get_all_subcategories
 from utils.rule_engine import get_followup_questions
 from utils.playbook_loader import load_playbook
@@ -45,6 +45,8 @@ class ChatRequest(BaseModel):
     remaining_questions: List[Dict[str, Any]] = []
     evidence: Dict[str, bool] = {}
     user_input: str
+    summary: Optional[str] = ""
+    timeline: Optional[List[Dict[str, Any]]] = []
 
 class SummaryRequest(BaseModel):
     incident_description: str
@@ -82,182 +84,72 @@ async def get_playbook(subcategory_id: str):
 
 @app.post("/api/chat")
 async def chat_handler(req: ChatRequest):
-    """Handle chat message logic and stage transitions."""
+    """Handle chat message logic and stage transitions via dynamic AI investigation."""
     messages = list(req.messages)
     stage = req.stage
     classification = req.classification
     followup_answers = dict(req.followup_answers)
-    remaining_questions = list(req.remaining_questions)
     evidence = dict(req.evidence)
     user_input = req.user_input
+    summary = req.summary or ""
+    timeline = list(req.timeline) if req.timeline else []
 
-    # Add user message to history
-    messages.append({"role": "user", "content": user_input, "type": "text"})
+    # Call dynamic AI Investigator
+    result = investigate_incident(
+        messages=messages,
+        stage=stage,
+        classification=classification,
+        followup_answers=followup_answers,
+        evidence=evidence,
+        timeline=timeline,
+        summary=summary,
+        user_input=user_input,
+    )
 
-    summary = ""
-    timeline = []
-    summary_generated = False
+    if "error" in result:
+        # Fallback in case of error
+        messages.append({"role": "user", "content": user_input, "type": "text"})
+        messages.append({
+            "role": "assistant",
+            "content": f"I experienced an issue processing that: {result['error']}. Let's continue describing the details.",
+            "type": "text"
+        })
+        return {
+            "messages": messages,
+            "stage": stage,
+            "classification": classification,
+            "followup_answers": followup_answers,
+            "remaining_questions": [],
+            "summary": summary,
+            "timeline": timeline,
+            "summary_generated": False,
+        }
 
-    # Stage 1: Intake -> Stage 2: Classification
-    if stage == "stage_1_intake":
-        incident_description = user_input
-        stage = "stage_2_classification"
-        
-        # Call AI understanding
-        result = understand_incident(user_input, get_subcategory_names())
-        
-        if "error" in result:
-            messages.append({
-                "role": "assistant",
-                "content": "I couldn't reach the classification engine right now. Please select the correct category in the Case File panel or tell me more about it.",
-                "type": "text"
-            })
-            stage = "stage_2_confirming"
-        else:
-            mapped = map_to_official_category(result)
-            classification = mapped
-            subcat_name = mapped.get("subcategory_name")
-            cat_name = mapped.get("category_name")
-            confidence_low = mapped.get("needs_confirmation")
+    # Extract dynamic state from AI response
+    stage = result.get("stage", stage)
+    classification = result.get("classification", classification)
+    followup_answers = result.get("followup_answers", followup_answers)
+    timeline = result.get("timeline", timeline)
+    summary = result.get("summary", summary)
+    evidence = result.get("evidence", evidence)
+    summary_generated = result.get("summary_generated", False)
 
-            if not confidence_low:
-                # Set up subcategory select
-                subcategory_id = mapped.get("subcategory_id")
-                remaining_questions = get_followup_questions(subcategory_id, followup_answers)
-                
-                messages.append({
-                    "role": "assistant",
-                    "content": f"Understood. This looks like **{subcat_name}** under *{cat_name}*. I've loaded the incident playbook on the right. Let me ask a few quick questions to build your case file.",
-                    "type": "text"
-                })
-                stage = "stage_3_followup"
-
-                if remaining_questions:
-                    next_q = remaining_questions[0]
-                    messages.append({
-                        "role": "assistant",
-                        "content": next_q["text"],
-                        "type": "quick_reply" if next_q["type"] == "select" else "text",
-                        "options": next_q.get("options", [])
-                    })
-                else:
-                    stage = "stage_4_evidence"
-                    messages.append({
-                        "role": "assistant",
-                        "content": "No further questions needed. Here is your evidence checklist — please tick what you have preserved:",
-                        "type": "evidence_checklist"
-                    })
-            else:
-                stage = "stage_2_confirming"
-                messages.append({
-                    "role": "assistant",
-                    "content": f"I think this fits **{subcat_name}** under *{cat_name}*, but I want to confirm. Which of these best describes your situation?",
-                    "type": "quick_reply",
-                    "options": [subcat_name, "UPI Related Frauds", "Online Job Fraud", "Manual Override / Choose Other..."]
-                })
-
-    # Stage 2 Confirming quick-replies (e.g. selection)
-    elif stage == "stage_2_confirming":
-        if user_input == "Manual Override / Choose Other...":
-            messages.append({
-                "role": "assistant",
-                "content": "No problem. Describe the incident in more detail and I will re-classify, or select the correct subcategory in the Case File panel.",
-                "type": "text"
-            })
-        else:
-            subcategories = get_all_subcategories()
-            matched = next((s for s in subcategories if s["name"] == user_input), None)
-            if matched:
-                subcategory_id = matched["id"]
-                # Perform handle_category_select operations
-                meta = load_playbook(subcategory_id)
-                categories_path = DATA_DIR / "categories.json"
-                with open(categories_path, encoding="utf-8") as f:
-                    cat_data = json.load(f)
-                selected_cat = next(c for c in cat_data["categories"] if c["id"] == matched["category_id"])
-
-                classification = {
-                    "category_id": matched["category_id"],
-                    "category_name": selected_cat["name"],
-                    "subcategory_id": matched["id"],
-                    "subcategory_name": matched["name"],
-                    "match_confidence": 1.0,
-                    "needs_confirmation": False,
-                }
-                remaining_questions = get_followup_questions(subcategory_id, followup_answers)
-
-                messages.append({
-                    "role": "assistant",
-                    "content": f"Confirmed. Mapped to **{matched['name']}**. Incident Playbook and diagnostics loaded.",
-                    "type": "text"
-                })
-                stage = "stage_3_followup"
-
-                if remaining_questions:
-                    next_q = remaining_questions[0]
-                    messages.append({
-                        "role": "assistant",
-                        "content": next_q["text"],
-                        "type": "quick_reply" if next_q["type"] == "select" else "text",
-                        "options": next_q.get("options", [])
-                    })
-                else:
-                    stage = "stage_4_evidence"
-                    messages.append({
-                        "role": "assistant",
-                        "content": "No further questions needed. Here is your evidence checklist — please tick what you have preserved:",
-                        "type": "evidence_checklist"
-                    })
-
-    # Stage 3: Followup questions
-    elif stage == "stage_3_followup":
-        subcategory_id = classification.get("subcategory_id") if classification else None
-        if subcategory_id and remaining_questions:
-            active_q = remaining_questions.pop(0)
-            followup_answers[active_q["id"]] = user_input
-            
-            # Recalculate remaining questions
-            remaining_questions = get_followup_questions(subcategory_id, followup_answers)
-
-            if remaining_questions:
-                next_q = remaining_questions[0]
-                messages.append({
-                    "role": "assistant",
-                    "content": next_q["text"],
-                    "type": "quick_reply" if next_q["type"] == "select" else "text",
-                    "options": next_q.get("options", [])
-                })
-            else:
-                stage = "stage_4_evidence"
-                summary_generated = True
-                
-                # Pre-generate summary and timeline
-                case_data = {
-                    "incident_description": messages[1]["content"] if len(messages) > 1 else "",
-                    "classification": classification,
-                    "followup_answers": followup_answers,
-                    "evidence_collected": evidence,
-                }
-                res = generate_summary_and_timeline(case_data)
-                if "error" not in res:
-                    summary = res.get("summary", "")
-                    timeline = res.get("timeline", [])
-
-                messages.append({
-                    "role": "assistant",
-                    "content": "All follow-up questions completed. I've compiled your Case File. Please tick items as you secure evidence:",
-                    "type": "evidence_checklist"
-                })
+    assistant_msg = result.get("assistant_message")
+    if assistant_msg:
+        # Append user input and then assistant message
+        messages.append({"role": "user", "content": user_input, "type": "text"})
+        messages.append(assistant_msg)
 
     return {
         "messages": messages,
         "stage": stage,
         "classification": classification,
         "followup_answers": followup_answers,
-        "remaining_questions": remaining_questions,
+        "remaining_questions": [],
         "summary": summary,
         "timeline": timeline,
         "summary_generated": summary_generated,
+        "evidence": evidence
     }
 
 @app.post("/api/generate-summary")

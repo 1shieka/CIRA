@@ -2,16 +2,28 @@
 
 A Streamlit application that helps cybercrime victims in India get immediate guidance and map their incident to the correct category on the [National Cyber Crime Reporting Portal](https://cybercrime.gov.in).
 
-## Quick Start
+## Quick Start (with `uv`)
 
+### 1. Start the Backend (FastAPI)
+From the project root directory:
 ```bash
-cd cira
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env        # Add your GROQ_API_KEY
-streamlit run app.py
+# Setup uv virtual environment (done)
+uv venv
+uv pip install -r requirements.txt
+
+# Run the FastAPI server via uv
+uv run python server.py
 ```
+*The backend API will run on `http://localhost:8000`.*
+
+### 2. Start the Frontend (Vite React Client)
+From the `client` directory:
+```bash
+cd client
+npm install
+npm run dev -- --port 8501 --host
+```
+*The React user interface will run on `http://localhost:8501`.*
 
 ## Architecture
 

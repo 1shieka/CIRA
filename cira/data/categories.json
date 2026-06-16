@@ -59,175 +59,175 @@
       "id": "cheating-by-impersonation",
       "name": "Cheating by Impersonation",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/cheating-by-impersonation.md"
+      "playbook_path": "playbooks/playbook2.md"
     },
     {
       "id": "cyber-bullying-stalking-sexting",
       "name": "Cyber Bullying / Stalking / Sexting",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/cyber-bullying-stalking-sexting.md"
+      "playbook_path": "playbooks/playbook3.md"
     },
     {
       "id": "e-mail-phishing",
       "name": "E-Mail Phishing",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/e-mail-phishing.md"
+      "playbook_path": "playbooks/playbook4.md"
     },
     {
       "id": "fake-impersonating-profile",
       "name": "Fake/Impersonating Profile",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/fake-impersonating-profile.md"
+      "playbook_path": "playbooks/playbook2.md"
     },
     {
       "id": "impersonating-email",
       "name": "Impersonating Email",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/impersonating-email.md"
+      "playbook_path": "playbooks/playbook2.md"
     },
     {
       "id": "intimidating-email",
       "name": "Intimidating Email",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/intimidating-email.md"
+      "playbook_path": "playbooks/playbook3.md"
     },
     {
       "id": "online-job-fraud",
       "name": "Online Job Fraud",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/online-job-fraud.md"
+      "playbook_path": "playbooks/playbook5.md"
     },
     {
       "id": "online-matrimonial-fraud",
       "name": "Online Matrimonial Fraud",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/online-matrimonial-fraud.md"
+      "playbook_path": "playbooks/playbook5.md"
     },
     {
       "id": "profile-hacking-identity-theft",
       "name": "Profile Hacking/ Identity Theft",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/profile-hacking-identity-theft.md"
+      "playbook_path": "playbooks/playbook1.md"
     },
     {
       "id": "provocative-speech-unlawful-acts",
       "name": "Provocative Speech for unlawful acts",
       "category_id": "online-social-media",
-      "playbook_path": "playbooks/online_social_media/provocative-speech-unlawful-acts.md"
+      "playbook_path": "playbooks/playbook3.md"
     },
     {
       "id": "aadhaar-enabled-payment-system",
       "name": "Aadhar Enabled Payment System (AEPS)",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/aadhaar-enabled-payment-system.md"
+      "playbook_path": "playbooks/playbook6.md"
     },
     {
       "id": "business-email-compromise",
       "name": "Business Email Compromise/Email Takeover",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/business-email-compromise.md"
+      "playbook_path": "playbooks/playbook1.md"
     },
     {
       "id": "debit-credit-card-sim-swap-fraud",
       "name": "Debit/Credit Card Fraud/Sim Swap Fraud",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/debit-credit-card-sim-swap-fraud.md"
+      "playbook_path": "playbooks/playbook7.md"
     },
     {
       "id": "demat-depository-fraud",
       "name": "Demat/Depository Fraud",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/demat-depository-fraud.md"
+      "playbook_path": "playbooks/playbook8.md"
     },
     {
       "id": "e-wallet-related-fraud",
       "name": "E-Wallet Related Fraud",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/e-wallet-related-fraud.md"
+      "playbook_path": "playbooks/playbook6.md"
     },
     {
       "id": "fraud-call-vishing",
       "name": "Fraud Call/Vishing",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/fraud-call-vishing.md"
+      "playbook_path": "playbooks/playbook4.md"
     },
     {
       "id": "internet-banking-related-fraud",
       "name": "Internet Banking Related Fraud",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/internet-banking-related-fraud.md"
+      "playbook_path": "playbooks/playbook6.md"
     },
     {
       "id": "upi-related-frauds",
       "name": "UPI Related Frauds",
       "category_id": "online-financial-fraud",
-      "playbook_path": "playbooks/online_financial_fraud/upi-related-frauds.md"
+      "playbook_path": "playbooks/playbook6.md"
     },
     {
       "id": "damage-to-computer-systems",
       "name": "Damage to computer, computer systems etc.",
       "category_id": "hacking-damage-computer",
-      "playbook_path": "playbooks/hacking_damage_computer/damage-to-computer-systems.md"
+      "playbook_path": "playbooks/playbook9.md"
     },
     {
       "id": "email-hacking",
       "name": "Email Hacking",
       "category_id": "hacking-damage-computer",
-      "playbook_path": "playbooks/hacking_damage_computer/email-hacking.md"
+      "playbook_path": "playbooks/playbook1.md"
     },
     {
       "id": "tampering-computer-source-documents",
       "name": "Tampering with computer source documents",
       "category_id": "hacking-damage-computer",
-      "playbook_path": "playbooks/hacking_damage_computer/tampering-computer-source-documents.md"
+      "playbook_path": "playbooks/playbook9.md"
     },
     {
       "id": "unauthorised-access-data-breach",
       "name": "Unauthorised Access/Data Breach",
       "category_id": "hacking-damage-computer",
-      "playbook_path": "playbooks/hacking_damage_computer/unauthorised-access-data-breach.md"
+      "playbook_path": "playbooks/playbook9.md"
     },
     {
       "id": "website-defacement-hacking",
       "name": "Website Defacement/Hacking",
       "category_id": "hacking-damage-computer",
-      "playbook_path": "playbooks/hacking_damage_computer/website-defacement-hacking.md"
+      "playbook_path": "playbooks/playbook10.md"
     },
     {
       "id": "online-cyber-trafficking",
       "name": "Online Cyber Trafficking",
       "category_id": "other-categories",
-      "playbook_path": "playbooks/other_categories/online-cyber-trafficking.md"
+      "playbook_path": "playbooks/playbook11.md"
     },
     {
       "id": "online-gambling-betting",
       "name": "Online Gambling / Betting",
       "category_id": "other-categories",
-      "playbook_path": "playbooks/other_categories/online-gambling-betting.md"
+      "playbook_path": "playbooks/playbook11.md"
     },
     {
       "id": "ransomware",
       "name": "Ransomware",
       "category_id": "other-categories",
-      "playbook_path": "playbooks/other_categories/ransomware.md"
+      "playbook_path": "playbooks/playbook11.md"
     },
     {
       "id": "cryptocurrency-crime",
       "name": "Cryptocurrency Crime",
       "category_id": "other-categories",
-      "playbook_path": "playbooks/other_categories/cryptocurrency-crime.md"
+      "playbook_path": "playbooks/playbook8.md"
     },
     {
       "id": "cyber-terrorism",
       "name": "Cyber Terrorism",
       "category_id": "other-categories",
-      "playbook_path": "playbooks/other_categories/cyber-terrorism.md"
+      "playbook_path": "playbooks/playbook11.md"
     },
     {
       "id": "any-other-cyber-crime",
       "name": "Any Other Cyber Crime",
       "category_id": "other-categories",
-      "playbook_path": "playbooks/other_categories/any-other-cyber-crime.md"
+      "playbook_path": "playbooks/playbook11.md"
     }
   ]
 }

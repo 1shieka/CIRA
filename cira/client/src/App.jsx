@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { 
   Phone, 
   ChevronRight, 
@@ -24,7 +26,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = `http://${window.location.hostname}:8000`;
 
 export default function App() {
   // Config & catalog data from backend
@@ -161,6 +163,8 @@ export default function App() {
           remaining_questions: remainingQuestions,
           evidence,
           user_input: textToSend,
+          summary,
+          timeline,
         })
       });
 
@@ -176,11 +180,19 @@ export default function App() {
         setFollowupAnswers(data.followup_answers || {});
         setRemainingQuestions(data.remaining_questions || []);
 
-        if (data.summary_generated) {
-          setSummaryGenerated(true);
+        if (data.summary !== undefined) {
           setSummary(data.summary || '');
           setEditedSummaryText(data.summary || '');
+        }
+        if (data.timeline !== undefined) {
           setTimeline(data.timeline || []);
+        }
+        if (data.evidence !== undefined) {
+          setEvidence(data.evidence || {});
+        }
+
+        if (data.summary_generated) {
+          setSummaryGenerated(true);
         }
       }
     } catch (err) {
@@ -224,6 +236,8 @@ export default function App() {
           remaining_questions: [],
           evidence,
           user_input: selectedSub.name, // Simulate confirming
+          summary,
+          timeline,
         })
       });
 
@@ -238,6 +252,21 @@ export default function App() {
         setClassification(data.classification || null);
         setFollowupAnswers(data.followup_answers || {});
         setRemainingQuestions(data.remaining_questions || []);
+
+        if (data.summary !== undefined) {
+          setSummary(data.summary || '');
+          setEditedSummaryText(data.summary || '');
+        }
+        if (data.timeline !== undefined) {
+          setTimeline(data.timeline || []);
+        }
+        if (data.evidence !== undefined) {
+          setEvidence(data.evidence || {});
+        }
+
+        if (data.summary_generated) {
+          setSummaryGenerated(true);
+        }
       }
     } catch (err) {
       console.error("Override error:", err);
@@ -926,8 +955,8 @@ export default function App() {
                       </button>
                       
                       {isExpanded && (
-                        <div className="p-3 bg-white text-[11px] text-gray-600 leading-relaxed border-t border-gray-150 whitespace-pre-wrap">
-                          {content}
+                        <div className="p-3 bg-white text-[11px] text-gray-600 leading-relaxed border-t border-gray-150 playbook-markdown">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                         </div>
                       )}
                     </div>
