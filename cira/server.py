@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 
-from utils.groq_client import understand_incident, generate_summary_and_timeline
+from utils.llm_client import understand_incident, generate_summary_and_timeline
 from utils.classification_mapper import map_to_official_category, get_subcategory_names, get_all_subcategories
 from utils.rule_engine import get_followup_questions
 from utils.playbook_loader import load_playbook

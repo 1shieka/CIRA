@@ -1,0 +1,18 @@
+[project]
+name = "cira"
+version = "0.1.0"
+description = "Cyber Incidence Response Assistant"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "fpdf2",
+    "openai",
+    "python-dotenv",
+    "python-multipart",
+    "streamlit",
+    "uvicorn",
+]
+
+[tool.uv]
+package = false

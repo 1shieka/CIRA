@@ -25,7 +25,8 @@ from utils.classification_mapper import (
     get_subcategory_names,
     map_to_official_category,
 )
-from utils.groq_client import generate_summary_and_timeline, understand_incident
+from utils.llm_client import generate_summary_and_timeline, understand_incident
+from utils.azure_openai_client import call_azure_openai
 from utils.rule_engine import get_followup_questions
 from utils.pdf_generator import generate_pdf_report
 
@@ -102,7 +103,7 @@ def get_questions_labels_map() -> dict[str, str]:
 
 # --- AI Helper Triggers ---
 def trigger_ai_summary_timeline():
-    """Trigger Groq call to generate the case summary and timeline in the background."""
+    """Trigger the LLM call to generate the case summary and timeline."""
     case_data = {
         "incident_description": st.session_state.incident_description,
         "classification": st.session_state.classification,
@@ -1000,13 +1001,10 @@ Respond in 3-4 sentences: reassuring, practical, action-oriented. Mention helpli
 
                 with st.spinner("Formulating response..."):
                     try:
-                        from utils.groq_client import _ensure_client, GROQ_MODEL
-                        client = _ensure_client()
-                        response = client.chat.completions.create(
-                            model=GROQ_MODEL,
-                            messages=[{"role": "user", "content": prompt}],
+                        reply = call_azure_openai(
+                            [{"role": "user", "content": prompt}],
+                            temperature=0.35,
                         )
-                        reply = response.choices[0].message.content
                     except Exception as e:
                         reply = "Please contact your bank immediately, secure your credentials, and file a report at cybercrime.gov.in. You can also call the national helpline **1930** for financial fraud."
 

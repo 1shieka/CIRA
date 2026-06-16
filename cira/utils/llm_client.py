@@ -1,73 +1,25 @@
-"""Groq API client for incident understanding and summary generation."""
+"""LLM helpers for incident understanding and summary generation."""
 
 import json
-import os
-import re
-from pathlib import Path
 
-from dotenv import load_dotenv
-from groq import Groq
+from utils.azure_openai_client import AZURE_OPENAI_DEPLOYMENT, call_azure_openai_json
 
-# Model name — change here if needed
-GROQ_MODEL = "llama-3.3-70b-versatile"
-
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-
-_client: Groq | None = None
+LLM_MODEL = AZURE_OPENAI_DEPLOYMENT
 
 
-def _get_api_key() -> str | None:
-    return os.getenv("GROQ_API_KEY")
-
-
-def _ensure_client() -> Groq:
-    global _client
-    api_key = _get_api_key()
-    if not api_key or api_key == "your_key_here":
-        raise ValueError(
-            "GROQ_API_KEY is missing or not set. Copy .env.example to .env and add your key."
-        )
-    if _client is None:
-        _client = Groq(api_key=api_key)
-    return _client
-
-
-def _extract_json(text: str) -> dict:
-    """Extract JSON object from model response, handling markdown fences."""
-    text = text.strip()
-    fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
-    if fence_match:
-        text = fence_match.group(1).strip()
+def _safe_llm_json_call(prompt: str) -> dict:
+    """Call the configured model and return parsed JSON, or an error dict."""
     try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        brace_match = re.search(r"\{[\s\S]*\}", text)
-        if brace_match:
-            return json.loads(brace_match.group())
-        raise ValueError(f"Could not parse JSON from model response: {text[:200]}")
-
-
-def _safe_groq_call(prompt: str) -> dict:
-    """Call Groq and return parsed JSON, or error dict on failure."""
-    try:
-        client = _ensure_client()
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        content = response.choices[0].message.content
-        if not content:
-            return {"error": "Empty response from Groq API."}
-        return _extract_json(content)
+        return call_azure_openai_json(prompt)
     except ValueError as e:
         return {"error": str(e)}
     except Exception as e:
         err = str(e)
         if "429" in err or "quota" in err.lower() or "rate" in err.lower():
-            return {"error": "Groq API rate limit reached. Please wait and try again."}
+            return {"error": "Azure OpenAI API rate limit reached. Please wait and try again."}
         if "API key" in err or "401" in err or "403" in err or "invalid" in err.lower():
-            return {"error": "Invalid or unauthorized GROQ_API_KEY."}
-        return {"error": f"Groq API error: {err}"}
+            return {"error": "Invalid or unauthorized AZURE_OPENAI_API_KEY."}
+        return {"error": f"Azure OpenAI API error: {err}"}
 
 
 def understand_incident(user_text: str, category_list: list[str]) -> dict:
@@ -100,13 +52,13 @@ Use confidence:
 - medium: likely match but some ambiguity
 - low: unclear or could fit multiple categories
 """
-    result = _safe_groq_call(prompt)
+    result = _safe_llm_json_call(prompt)
     if "error" in result:
         return result
 
     required = {"summary", "suggested_category", "confidence"}
     if not required.issubset(result.keys()):
-        return {"error": "Incomplete response from Groq.", "raw": result}
+        return {"error": "Incomplete response from Azure OpenAI.", "raw": result}
 
     return {
         "summary": result["summary"],
@@ -138,12 +90,12 @@ Respond with ONLY valid JSON:
   ]
 }}
 """
-    result = _safe_groq_call(prompt)
+    result = _safe_llm_json_call(prompt)
     if "error" in result:
         return result
 
     if "summary" not in result or "timeline" not in result:
-        return {"error": "Incomplete summary/timeline from Groq.", "raw": result}
+        return {"error": "Incomplete summary/timeline from Azure OpenAI.", "raw": result}
 
     return {
         "summary": result["summary"],

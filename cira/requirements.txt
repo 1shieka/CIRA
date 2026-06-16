@@ -1,5 +1,5 @@
 streamlit
-groq
+openai
 python-dotenv
 fpdf2
 fastapi
