@@ -59,8 +59,8 @@ def call_agent(
                 "content": (
                     "Internal verifier feedback. Use this to produce the next "
                     "user-facing Investigation Officer reply. Do not mention the "
-                    "verifier, scores, or internal policy. Ask exactly one short "
-                    "question for the missing evidence, gently and specifically.\n\n"
+                    "verifier, scores, or internal policy. Ask for the missing "
+                    "evidence gently and specifically.\n\n"
                     f"{json.dumps(verifier_feedback, ensure_ascii=False, indent=2)}"
                 ),
             }
@@ -80,7 +80,7 @@ def call_agent(
     if status not in {"investigating", "complete"}:
         status = "investigating"
     if not isinstance(reply, str) or not reply.strip():
-        reply = "I am here with you. What happened?"
+        reply = "Please describe what happened, including when it happened and what account, app, bank, website, or device was involved."
 
     return {"status": status, "reply": reply.strip()}, raw
 
@@ -131,8 +131,8 @@ def call_verifier(
     feedback = parsed.get("feedback_to_investigator", "")
     if not isinstance(feedback, str) or not feedback.strip():
         feedback = (
-            "Ask exactly one focused question for the highest-priority missing "
-            "evidence required by the matched category in EVALUATION.md."
+            "Ask one to three focused questions for the missing evidence required "
+            "by the matched category in EVALUATION.md."
         )
 
     return {
