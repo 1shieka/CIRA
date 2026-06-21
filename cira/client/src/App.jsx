@@ -28,7 +28,11 @@ import {
   Square
 } from 'lucide-react';
 
-const API_BASE = `http://${window.location.hostname}:8000`;
+// Keep local development pointed at the FastAPI server while production uses
+// Vercel's same-origin FastAPI function.
+const API_BASE = import.meta.env.VITE_API_BASE ?? (
+  import.meta.env.DEV ? `http://${window.location.hostname}:8000` : ''
+);
 
 export default function App() {
   // Config & catalog data from backend

@@ -1662,13 +1662,13 @@ def main():
             """
             <style>
             [data-testid="stBottom"] {
-                transform: translateY(-40vh);
+                transform: translateY(-36vh);
                 animation: cira-input-enter 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
                 will-change: transform;
             }
             @keyframes cira-input-enter {
-                from { transform: translateY(calc(-40vh + 18px)); opacity: 0; }
-                to   { transform: translateY(-40vh); opacity: 1; }
+                from { transform: translateY(calc(-36vh + 18px)); opacity: 0; }
+                to   { transform: translateY(-36vh); opacity: 1; }
             }
             @media (prefers-reduced-motion: reduce) {
                 [data-testid="stBottom"] { animation: none; }
@@ -1686,7 +1686,7 @@ def main():
                 will-change: transform;
             }
             @keyframes cira-input-dock {
-                from { transform: translateY(-40vh); }
+                from { transform: translateY(-36vh); }
                 to   { transform: translateY(0); }
             }
             @media (prefers-reduced-motion: reduce) {
