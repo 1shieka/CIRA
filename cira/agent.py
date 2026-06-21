@@ -23,9 +23,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-from utils.azure_openai_client import (
-    AZURE_OPENAI_DEPLOYMENT,
-    call_azure_openai,
+from utils.groq_client import (
+    GROQ_MODEL,
+    call_groq as call_azure_openai,
     extract_json,
 )
 from utils.pdf_generator import generate_pdf_report
@@ -261,7 +261,7 @@ def run_loop() -> None:
     awaiting_partial_confirmation = False
 
     print("CIRA Investigation Officer")
-    print(f"Azure OpenAI deployment: {AZURE_OPENAI_DEPLOYMENT}")
+    print(f"Groq Model: {GROQ_MODEL}")
     print("Describe the cyber incident. Type /reset to start over or /exit to quit.\n")
 
     while True:

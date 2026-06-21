@@ -327,3 +327,21 @@ def transcribe_audio(file_bytes: bytes, filename: str) -> str:
     return transcription.text
 
 
+def call_groq(messages: list[dict], temperature: float = 0.1) -> str:
+    """Call Groq chat completions using the global GROQ_MODEL."""
+    try:
+        client = _ensure_client()
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            temperature=temperature,
+        )
+        return response.choices[0].message.content or ""
+    except Exception as e:
+        raise RuntimeError(f"Groq API error in call_groq: {str(e)}")
+
+
+extract_json = _extract_json
+
+
+
