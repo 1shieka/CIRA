@@ -1,8 +1,25 @@
-"""Standalone CIRA investigation agent loop."""
+"""Standalone CIRA investigation agent loop.
+
+Flow:
+  TRIAGE          -> one-time financial-loss check on the first user message,
+                     surfaces the golden-hour advisory immediately if relevant
+  INTERVIEWING    -> existing agent <-> verifier loop, now also accumulating
+                     structured CaseState (evidence, timeline, facts) so the
+                     final report doesn't depend on the model re-deriving
+                     everything from scratch
+  REPORT_READY    -> verifier says evidence is report-ready; agent produces
+                     the final summary
+  AWAITING_FIR    -> offer / confirm PDF generation
+  FIR_GENERATED   -> PDF written to disk
+
+The user can also say "generate the FIR" / "make the report" at ANY point,
+in any phase — this is checked every turn before normal phase logic runs.
+"""
 
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -11,11 +28,44 @@ from utils.azure_openai_client import (
     call_azure_openai,
     extract_json,
 )
+from utils.pdf_generator import generate_pdf_report
+
+from case_state import CaseState
+from triage import (
+    build_triage_notice,
+    detect_financial_loss_llm,
+    detect_financial_loss_regex,
+)
 
 
 AGENT_PROMPT_PATH = Path(__file__).with_name("agent.md")
 VERIFIER_PROMPT_PATH = Path(__file__).with_name("verifier.md")
 EVALUATION_PATH = Path(__file__).with_name("EVALUATION.md")
+
+GENERATE_FIR_PATTERNS = [
+    r"\bgenerate\b.{0,20}\b(fir|report|pdf)\b",
+    r"\b(make|create|build)\b.{0,20}\b(fir|report|pdf)\b",
+    r"\bfir\b.{0,15}\bnow\b",
+    r"\bdownload\b.{0,15}\b(report|fir|pdf)\b",
+]
+
+PROCEED_ANYWAY_PATTERNS = [
+    r"\bproceed anyway\b",
+    r"\bgenerate (it )?anyway\b",
+    r"\bjust generate\b",
+    r"\bgo ahead\b.{0,15}\b(anyway|now)\b",
+    r"\bi (don'?t|do not) have (more|any more|anything else)\b",
+]
+
+
+def wants_fir_generation(text: str) -> bool:
+    lowered = text.lower()
+    return any(re.search(p, lowered) for p in GENERATE_FIR_PATTERNS)
+
+
+def wants_to_proceed_anyway(text: str) -> bool:
+    lowered = text.lower()
+    return any(re.search(p, lowered) for p in PROCEED_ANYWAY_PATTERNS)
 
 
 def load_evaluation_matrix() -> str:
@@ -82,7 +132,12 @@ def call_agent(
     if not isinstance(reply, str) or not reply.strip():
         reply = "Please describe what happened, including when it happened and what account, app, bank, website, or device was involved."
 
-    return {"status": status, "reply": reply.strip()}, raw
+    return {
+        "status": status,
+        "reply": reply.strip(),
+        "summary": parsed.get("summary", ""),
+        "timeline": parsed.get("timeline", []),
+    }, raw
 
 
 def call_verifier(
@@ -148,12 +203,62 @@ def call_verifier(
     }, raw
 
 
+def handle_fir_generation_request(
+    case: CaseState,
+    verifier_status: str | None,
+    user_confirmed_partial: bool,
+) -> tuple[str | None, bytes | None]:
+    """Decide whether to generate the PDF now, or ask the user to confirm a
+    partial/incomplete report first. Returns (message_to_user, pdf_bytes).
+    Exactly one of the two will be non-None, unless the user has not yet
+    confirmed and we are waiting (in which case message is set, bytes is None).
+    """
+    is_ready = verifier_status == "verified"
+
+    if is_ready or user_confirmed_partial:
+        case_data = case.to_pdf_case_data()
+        pdf_bytes = generate_pdf_report(case_data)
+        if is_ready:
+            return (
+                "Your case report is ready. I've compiled everything we discussed "
+                "into the FIR document below.",
+                pdf_bytes,
+            )
+        missing = case.missing_required_labels()
+        missing_note = (
+            f" Missing items noted in the report as pending: {', '.join(missing)}."
+            if missing
+            else ""
+        )
+        return (
+            "Generating your report now as requested, marked as an incomplete "
+            f"investigation.{missing_note} You can ask me to regenerate it later "
+            "once you have more details.",
+            pdf_bytes,
+        )
+
+    missing = case.missing_required_labels()
+    missing_note = (
+        f" Specifically: {', '.join(missing)}." if missing else ""
+    )
+    return (
+        "I can generate the report now, but providing a bit more detail first "
+        "will make your case stronger and more presentable to investigators."
+        f"{missing_note} Want to add more, or should I proceed with what we "
+        "have? (Say \"proceed anyway\" to generate it now.)",
+        None,
+    )
+
+
 def run_loop() -> None:
     """Run an interactive terminal loop for the Investigation Officer."""
     evaluation_matrix = load_evaluation_matrix()
     system_prompt = load_agent_prompt(evaluation_matrix)
     verifier_prompt = load_verifier_prompt(evaluation_matrix)
     messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
+    case = CaseState()
+    last_verifier_status: str | None = None
+    awaiting_partial_confirmation = False
 
     print("CIRA Investigation Officer")
     print(f"Azure OpenAI deployment: {AZURE_OPENAI_DEPLOYMENT}")
@@ -175,7 +280,62 @@ def run_loop() -> None:
 
         if user_input.lower() == "/reset":
             messages = [{"role": "system", "content": system_prompt}]
+            case = CaseState()
+            last_verifier_status = None
+            awaiting_partial_confirmation = False
             print("Case reset. Please describe the incident again.\n")
+            continue
+
+        # --- TRIAGE: runs once, on the first real user message only ---
+        if case.phase == "TRIAGE" and not case.urgent_notice_shown:
+            signal = detect_financial_loss_regex(user_input)
+            if signal == "ambiguous":
+                try:
+                    financial_loss = detect_financial_loss_llm(user_input, call_azure_openai)
+                except Exception:
+                    financial_loss = True  # fail safe: show the advisory
+            else:
+                financial_loss = signal == "yes"
+
+            case.financial_loss = financial_loss
+            case.urgent_notice_shown = True
+            case.phase = "INTERVIEWING"
+
+            notice = build_triage_notice(financial_loss)
+            if notice:
+                print(f"\nInvestigation Officer:\n{notice}\n")
+
+        # --- Mid-conversation FIR generation command (any phase) ---
+        if wants_fir_generation(user_input):
+            confirmed_partial = (
+                awaiting_partial_confirmation and wants_to_proceed_anyway(user_input)
+            )
+            message, pdf_bytes = handle_fir_generation_request(
+                case, last_verifier_status, confirmed_partial
+            )
+            print(f"\nInvestigation Officer: {message}\n")
+            if pdf_bytes is not None:
+                out_path = Path("case_report.pdf")
+                out_path.write_bytes(pdf_bytes)
+                print(f"(Saved to {out_path.resolve()})\n")
+                case.phase = "FIR_GENERATED"
+                awaiting_partial_confirmation = False
+                continue
+            else:
+                awaiting_partial_confirmation = True
+                continue
+
+        if wants_to_proceed_anyway(user_input) and awaiting_partial_confirmation:
+            message, pdf_bytes = handle_fir_generation_request(
+                case, last_verifier_status, user_confirmed_partial=True
+            )
+            print(f"\nInvestigation Officer: {message}\n")
+            if pdf_bytes is not None:
+                out_path = Path("case_report.pdf")
+                out_path.write_bytes(pdf_bytes)
+                print(f"(Saved to {out_path.resolve()})\n")
+                case.phase = "FIR_GENERATED"
+            awaiting_partial_confirmation = False
             continue
 
         messages.append({"role": "user", "content": user_input})
@@ -187,6 +347,8 @@ def run_loop() -> None:
                 messages,
                 agent_output,
             )
+            last_verifier_status = verifier_output["status"]
+            case.apply_verifier_output(verifier_output)
 
             if verifier_output["status"] == "verified":
                 if agent_output["status"] != "complete":
@@ -203,6 +365,7 @@ def run_loop() -> None:
                         },
                     )
                     agent_output["status"] = "complete"
+                case.phase = "REPORT_READY"
             else:
                 agent_output, raw_reply = call_agent(messages, verifier_output)
                 agent_output["status"] = "investigating"
@@ -211,12 +374,19 @@ def run_loop() -> None:
             continue
 
         messages.append({"role": "assistant", "content": raw_reply})
+        if agent_output.get("summary"):
+            case.summary = agent_output["summary"]
+        if isinstance(agent_output.get("timeline"), list):
+            case.timeline = agent_output["timeline"]
+
         reply = agent_output["reply"]
         print(f"\nInvestigation Officer: {reply}\n")
 
         if agent_output["status"] == "complete":
-            print("Investigation complete.")
-            break
+            print(
+                "Investigation complete. Say \"generate the FIR\" whenever you're "
+                "ready for the PDF report."
+            )
 
 
 if __name__ == "__main__":
