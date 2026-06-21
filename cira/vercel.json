@@ -1,12 +1,18 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "installCommand": "cd client && npm ci",
+  "installCommand": "cd client && npm install",
   "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
   "functions": {
-    "server.py": {
+    "api/index.py": {
       "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.py"
+    }
+  ]
 }

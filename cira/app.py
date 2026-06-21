@@ -1634,6 +1634,7 @@ def main():
         unsafe_allow_html=True,
     )
 
+    # ── Floating helpline button (kept) ──────────────────────────────────────
     st.markdown(
         '''<a class="call-1930" href="tel:1930" aria-label="Call cyber fraud helpline 1930">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.62 10.79a15.46 15.46 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24c1.12.37 2.31.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
@@ -1641,6 +1642,98 @@ def main():
         </a>''',
         unsafe_allow_html=True,
     )
+
+    # ── Emergency & Action card — floats on the left, white, borderless ───────
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        .ea-card {
+            position: fixed;
+            top: 5.0rem;
+            left: 1.25rem;
+            width: 15.5rem;
+            z-index: 9;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #FFFFFF;
+            border-radius: 18px;
+            padding: 1.15rem 1.1rem;
+            box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.05);
+        }
+        .ea-card__kicker {
+            margin: 0 0 0.2rem !important;
+            font: 700 0.66rem/1 'Space Grotesk', sans-serif !important;
+            letter-spacing: 0.16em; text-transform: uppercase; color: #10A37F !important;
+        }
+        .ea-card__title {
+            margin: 0 0 0.9rem !important;
+            font: 600 1.1rem/1.15 'Space Grotesk', sans-serif !important;
+            letter-spacing: -0.01em; color: #111827 !important;
+        }
+        .ea-item {
+            display: flex; gap: 0.7rem; align-items: flex-start;
+            padding: 0.55rem 0; text-decoration: none !important;
+        }
+        .ea-badge {
+            flex: 0 0 auto; min-width: 3rem; height: 1.9rem; padding: 0 0.5rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 9px; font: 700 0.7rem/1 'Space Grotesk', sans-serif;
+            letter-spacing: 0.04em;
+        }
+        .ea-badge--red   { background: #FEE2E2; color: #DC2626 !important; }
+        .ea-badge--amber { background: #FEF3C7; color: #D97706 !important; }
+        .ea-badge--blue  { background: #E0F2FE; color: #0284C7 !important; }
+        .ea-badge--green { background: #D1FAE5; color: #059669 !important; }
+        .ea-body { display: flex; flex-direction: column; gap: 2px; }
+        .ea-title {
+            font: 700 0.8rem/1.2 'Space Grotesk', sans-serif !important;
+            letter-spacing: 0.03em; color: #1F2937 !important;
+        }
+        .ea-desc {
+            font: 400 0.72rem/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+            color: #6B7280 !important;
+        }
+        a.ea-item { transition: transform 150ms ease; }
+        a.ea-item:hover { transform: translateX(2px); }
+        a.ea-item:hover .ea-title { color: #10A37F !important; }
+        @media (max-width: 1180px) { .ea-card { display: none; } }
+        </style>
+        <div class="ea-card">
+            <p class="ea-card__kicker">Emergency &amp; Action</p>
+            <p class="ea-card__title">First response steps</p>
+            <a class="ea-item" href="tel:1930" aria-label="Call helpline 1930">
+                <span class="ea-badge ea-badge--red">1930</span>
+                <span class="ea-body">
+                    <span class="ea-title">REPORT FRAUD</span>
+                    <span class="ea-desc">Call the national helpline at 1930 immediately to freeze financial losses.</span>
+                </span>
+            </a>
+            <div class="ea-item">
+                <span class="ea-badge ea-badge--amber">NET</span>
+                <span class="ea-body">
+                    <span class="ea-title">GO OFFLINE</span>
+                    <span class="ea-desc">Disconnect compromised systems or mobile phones from Wi-Fi / Mobile Data.</span>
+                </span>
+            </div>
+            <div class="ea-item">
+                <span class="ea-badge ea-badge--blue">KEEP</span>
+                <span class="ea-body">
+                    <span class="ea-title">DON'T DELETE</span>
+                    <span class="ea-desc">Preserve all communication logs, chats, SMS alert texts, and transaction screens.</span>
+                </span>
+            </div>
+            <div class="ea-item">
+                <span class="ea-badge ea-badge--green">SAFE</span>
+                <span class="ea-body">
+                    <span class="ea-title">NEVER SHARE</span>
+                    <span class="ea-desc">Never share passwords, bank OTPs, or click on files received from unknown actors.</span>
+                </span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     if st.session_state.get("show_playbooks", False):
         render_playbook_library()
 
