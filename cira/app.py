@@ -29,6 +29,7 @@ from utils.llm_client import generate_summary_and_timeline, understand_incident
 from utils.azure_openai_client import call_azure_openai
 from utils.rule_engine import get_followup_questions
 from utils.pdf_generator import generate_pdf_report
+from utils.playbook_loader import load_playbook
 
 # --- Session State Configuration ---
 DEFAULT_SESSION = {
@@ -1220,6 +1221,104 @@ Respond in 3-4 sentences: reassuring, practical, action-oriented. Mention helpli
                         st.rerun()
 
 
+@st.dialog("Playbook Library", width="large")
+def render_playbook_library():
+    """Display every local Markdown playbook in a closeable catalogue."""
+    playbook_root = Path(__file__).parent / "playbooks"
+    playbooks = sorted(playbook_root.rglob("*.md"), key=lambda path: str(path).lower())
+
+    close_col, count_col = st.columns([1, 4])
+    with close_col:
+        if st.button("Close", key="close_playbooks", use_container_width=True):
+            st.session_state.show_playbooks = False
+            st.rerun()
+    with count_col:
+        st.markdown(
+            f'<p class="playbook-count">{len(playbooks)} response playbooks</p>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        '<p class="playbook-intro">Browse the complete operational guidance library. '
+        'Open any item to read its formatted Markdown content.</p>',
+        unsafe_allow_html=True,
+    )
+
+    current_group = None
+    for playbook_path in playbooks:
+        relative_path = playbook_path.relative_to(playbook_root)
+        group = (
+            "General"
+            if relative_path.parent == Path(".")
+            else relative_path.parent.name.replace("_", " ").replace("-", " ").title()
+        )
+        if group != current_group:
+            st.markdown(f'<h2 class="playbook-group">{group}</h2>', unsafe_allow_html=True)
+            current_group = group
+
+        title = playbook_path.stem.replace("-", " ").replace("_", " ").title()
+        with st.expander(title, expanded=False):
+            st.markdown(playbook_path.read_text(encoding="utf-8"))
+
+
+def classify_chat_message(message: str) -> None:
+    """Classify a user message and retain the corresponding playbook selection."""
+    st.session_state.chat_messages.append({"role": "user", "content": message})
+    result = understand_incident(message, get_subcategory_names())
+
+    if "error" in result:
+        st.session_state.chat_messages.append({
+            "role": "assistant",
+            "content": "I couldn't classify that incident right now. Please try again with a little more detail.",
+        })
+        return
+
+    classification = map_to_official_category(result)
+    st.session_state.active_classification = classification
+    st.session_state.active_playbook = load_playbook(classification["subcategory_id"])
+    confidence = round(classification["match_confidence"] * 100)
+    st.session_state.chat_messages.append({
+        "role": "assistant",
+        "content": (
+            f"This appears to be **{classification['subcategory_name']}** "
+            f"({confidence}% confidence). I’ve opened the matching response playbook on the right.\n\n"
+            f"{result['summary']}"
+        ),
+    })
+
+
+def render_active_playbook() -> None:
+    """Render the playbook associated with the most recent agent classification."""
+    classification = st.session_state.get("active_classification")
+    playbook = st.session_state.get("active_playbook")
+    with st.container(key="active_playbook_container"):
+        st.markdown('<p class="active-playbook-kicker">Active playbook</p>', unsafe_allow_html=True)
+
+        if not classification or not playbook:
+            st.markdown('<h2 class="active-playbook-title">Waiting for your message</h2>', unsafe_allow_html=True)
+            st.markdown(
+                '<p class="active-playbook-copy">Describe the incident in the chat. '
+                'CIRA will classify it and open the relevant response guide here.</p>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f'<h2 class="active-playbook-title">{classification["subcategory_name"]}</h2>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<p class="active-playbook-copy">{classification["category_name"]} · '
+                f'{round(classification["match_confidence"] * 100)}% confidence</p>',
+                unsafe_allow_html=True,
+            )
+            if playbook.get("available"):
+                for section, content in playbook.get("sections", {}).items():
+                    with st.expander(section, expanded=section == next(iter(playbook["sections"]), None)):
+                        st.markdown(content)
+            else:
+                st.info(playbook.get("message", "This playbook is not available yet."))
+
+
 def main():
     """Render the focused, single-prompt interface."""
     st.set_page_config(
@@ -1239,14 +1338,12 @@ def main():
         header[data-testid="stHeader"], footer, [data-testid="stSidebar"] { display: none !important; }
         .block-container {
             min-height: 100vh;
-            max-width: 820px !important;
-            padding: clamp(2rem, 24vh, 13rem) 1.25rem !important;
-            display: flex;
-            align-items: center;
+            max-width: 1240px !important;
+            padding: 7rem 1.25rem 9rem !important;
         }
         .block-container > div { width: 100%; }
         .cira-heading {
-            margin: 0 0 1.25rem !important;
+            margin: 0 0 2.5rem !important;
             color: #202123 !important;
             font: 600 clamp(2.5rem, 7vw, 4.5rem)/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
             letter-spacing: -0.075em !important;
@@ -1287,23 +1384,104 @@ def main():
         }
         .call-1930:focus-visible { outline: 3px solid rgba(239, 68, 68, 0.28); outline-offset: 3px; }
         .call-1930 svg { width: 1rem; height: 1rem; fill: currentColor; }
-        [data-testid="stTextArea"] { width: 100%; }
-        [data-testid="stTextArea"] label { display: none !important; }
-        [data-testid="stTextArea"] textarea {
-            min-height: 148px !important;
-            padding: 1.1rem 1.25rem !important;
+        div[data-element-id="playbooks_toggle_container"] {
+            position: fixed;
+            top: 4.75rem;
+            left: 1.25rem;
+            z-index: 10;
+            width: 9rem;
+        }
+        div[data-element-id="playbooks_toggle_container"] button {
+            width: 100%;
+            min-height: 2.5rem;
+            border: 1px solid #E1E3E8 !important;
+            border-radius: 999px !important;
+            background: #FFFFFF !important;
+            color: #343541 !important;
+            font: 650 0.84rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+            transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease !important;
+        }
+        div[data-element-id="playbooks_toggle_container"] button:hover {
+            border-color: #B8BCC6 !important;
+            background: #F8F8FA !important;
+            color: #202123 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 7px 16px rgba(0, 0, 0, 0.10) !important;
+        }
+        div[role="dialog"] { border-radius: 20px !important; }
+        .playbook-count { margin: 0.5rem 0 0 !important; color: #6B7280; font-size: 0.88rem; }
+        .playbook-intro { color: #4B5563; line-height: 1.55; margin: 0.5rem 0 1.5rem !important; }
+        .playbook-group {
+            color: #202123 !important;
+            font: 650 1rem/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+            margin: 1.5rem 0 0.6rem !important;
+        }
+        div[data-element-id="active_playbook_container"] {
+            min-height: 330px;
+            padding: 1.4rem;
+            border: 1px solid #3F3F46;
+            border-radius: 18px;
+            background: #202123;
+        }
+        .active-playbook-kicker {
+            margin: 0 0 0.55rem !important;
+            color: #10A37F !important;
+            font: 700 0.7rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }
+        .active-playbook-title {
+            margin: 0 !important;
+            color: #FFFFFF !important;
+            font: 650 1.2rem/1.25 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+            letter-spacing: -0.025em;
+        }
+        .active-playbook-copy { margin: 0.55rem 0 1.25rem !important; color: #D1D5DB; font-size: 0.84rem; line-height: 1.45; }
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] {
+            border: 1px solid #45454F !important;
+            border-radius: 10px !important;
+            background: #2A2B32 !important;
+        }
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] summary,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] summary * {
+            color: #FFFFFF !important;
+        }
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] p,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] li,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] td,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] blockquote {
+            color: #E5E7EB !important;
+        }
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] h1,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] h2,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] h3,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] h4,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] strong,
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] th {
+            color: #FFFFFF !important;
+        }
+        div[data-element-id="active_playbook_container"] [data-testid="stExpander"] a { color: #7DD3FC !important; }
+        [data-testid="stChatInput"] {
+            max-width: 800px;
+            margin: 0 auto;
             border: 1px solid #D9D9E3 !important;
             border-radius: 20px !important;
+            background: #FFFFFF !important;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(0, 0, 0, 0.05) !important;
+        }
+        [data-testid="stChatInput"] textarea {
+            min-height: 58px !important;
+            padding: 1.1rem 1.25rem !important;
             background: #FFFFFF !important;
             color: #1F2937 !important;
             caret-color: #10A37F !important;
             font: 400 1rem/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(0, 0, 0, 0.05) !important;
             resize: none !important;
             transition: border-color 160ms ease, box-shadow 160ms ease;
         }
-        [data-testid="stTextArea"] textarea::placeholder { color: #8E8EA0 !important; opacity: 1; }
-        [data-testid="stTextArea"] textarea:focus {
+        [data-testid="stChatInput"] textarea::placeholder { color: #8E8EA0 !important; opacity: 1; }
+        [data-testid="stChatInput"]:focus-within {
             border-color: #10A37F !important;
             box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.14), 0 3px 10px rgba(0, 0, 0, 0.10) !important;
         }
@@ -1319,14 +1497,31 @@ def main():
         </a>''',
         unsafe_allow_html=True,
     )
+    with st.container(key="playbooks_toggle_container"):
+        if st.button("Playbooks", key="open_playbooks"):
+            st.session_state.show_playbooks = True
+
+    if st.session_state.get("show_playbooks", False):
+        render_playbook_library()
+
+    st.session_state.setdefault("chat_messages", [])
+    st.session_state.setdefault("active_classification", None)
+    st.session_state.setdefault("active_playbook", None)
+
     st.markdown('<h1 class="cira-heading">CIRA</h1>', unsafe_allow_html=True)
-    st.text_area(
-        "Prompt",
-        key="prompt",
-        height=148,
-        label_visibility="collapsed",
-        placeholder="Message CIRA...",
-    )
+    chat_col, playbook_col = st.columns([1.65, 1], gap="large")
+    with chat_col:
+        for chat_message in st.session_state.chat_messages:
+            with st.chat_message(chat_message["role"]):
+                st.markdown(chat_message["content"])
+    with playbook_col:
+        render_active_playbook()
+
+    user_message = st.chat_input("Message CIRA…")
+    if user_message:
+        with st.spinner("Classifying incident and loading response guide…"):
+            classify_chat_message(user_message)
+        st.rerun()
 
 
 if __name__ == "__main__":
