@@ -9,9 +9,10 @@ client = Groq(
 )
 
 response = client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
+    model="openai/gpt-oss-120b",
+    response_format={ "type": "json_object" },
     messages=[
-        {"role": "user", "content": "Reply with exactly: GROQ WORKING"}
+        {"role": "user", "content": "Reply with a JSON object containing the key 'message' and value 'GROQ WORKING'"}
     ]
 )
 

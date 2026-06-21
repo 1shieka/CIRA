@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from groq import Groq
 
 # Model name — change here if needed
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "openai/gpt-oss-120b"
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
