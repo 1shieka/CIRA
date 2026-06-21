@@ -1520,60 +1520,66 @@ def main():
             color: #111827 !important;
         }
         [data-testid="stChatMessageContent"] a { color: #0E7490 !important; }
-        /* ── Bottom docked input bar ─────────────────────────── */
-        /* Solid surface so scrolled content never bleeds through the input. */
+        /* ── Bottom docked input — free & elegant (no card) ──── */
+        /* Transparent bar with a soft fade so messages dissolve behind it. */
         [data-testid="stBottom"] {
-            background: #FFFFFF !important;
-            border-top: 1px solid #ECECF1 !important;
-            box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.04) !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
         }
         [data-testid="stBottom"] > div {
-            background: #FFFFFF !important;
-            padding-bottom: 0.75rem !important;
+            background: linear-gradient(to top, #FFFFFF 62%, rgba(255, 255, 255, 0)) !important;
+            padding-bottom: 1rem !important;
         }
         [data-testid="stBottomBlockContainer"] {
-            max-width: 800px !important;
+            max-width: 760px !important;
             margin: 0 auto !important;
-            padding: 0.75rem 1rem 0 !important;
-            background: #FFFFFF !important;
+            padding: 1.25rem 1rem 0 !important;
+            background: transparent !important;
         }
         /* The rounded input shell */
         [data-testid="stChatInput"] {
             position: relative !important;
-            max-width: 800px;
+            max-width: 760px;
             margin: 0 auto;
-            display: flex !important;
-            align-items: flex-end !important;
-            border: 1px solid #D9D9E3 !important;
-            border-radius: 24px !important;
+            border: 1px solid #E5E7EB !important;
+            border-radius: 26px !important;
             background: #FFFFFF !important;
-            overflow: hidden !important;
-            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06) !important;
             transition: border-color 160ms ease, box-shadow 160ms ease;
         }
-        /* Kill the inner element's own border/background so only the shell shows */
+        /* Strip the inner BaseWeb wrappers so only the shell shows, and let
+           the text field span the full width (fixes text starting mid-box). */
         [data-testid="stChatInput"] > div,
         [data-testid="stChatInput"] [data-baseweb="textarea"],
         [data-testid="stChatInput"] [data-baseweb="base-input"] {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
+            width: 100% !important;
+            flex: 1 1 auto !important;
         }
         [data-testid="stChatInput"] textarea {
+            width: 100% !important;
             min-height: 56px !important;
             max-height: 200px !important;
             /* leave room for the send button on the right */
-            padding: 1rem 3.25rem 1rem 1.25rem !important;
+            padding: 0.95rem 3.5rem 0.95rem 1.4rem !important;
             background: transparent !important;
             color: #1F2937 !important;
             caret-color: #10A37F !important;
+            text-align: left !important;
             font: 400 1rem/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
             resize: none !important;
         }
-        [data-testid="stChatInput"] textarea::placeholder { color: #8E8EA0 !important; opacity: 1; }
+        [data-testid="stChatInput"] textarea::placeholder {
+            color: #8E8EA0 !important;
+            opacity: 1;
+            text-align: left !important;
+        }
         [data-testid="stChatInput"]:focus-within {
             border-color: #10A37F !important;
-            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.14), 0 3px 10px rgba(0, 0, 0, 0.10) !important;
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08) !important;
         }
         /* ── Send button ─────────────────────────────────────── */
         [data-testid="stChatInputSubmitButton"] {
