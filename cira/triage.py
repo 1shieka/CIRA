@@ -20,9 +20,11 @@ from typing import Literal
 FinancialSignal = Literal["yes", "no", "ambiguous"]
 
 _POSITIVE_PATTERNS = [
-    r"\b(debited|deducted|withdrawn|transferred|sent)\b.*\b(money|amount|rs\.?|inr|₹|rupees?)\b",
+    r"\b(debited|deducted|withdrawn|transferred|sent)\b.*\b(money|amount|rs\.?|inr|₹|rupe*e*s?)\b",
     r"\b(rs\.?|inr|₹)\s?\d",
-    r"\blost\b.{0,20}\b(money|rupees|amount|₹|rs\.?|inr|lakh|crore)\b",
+    r"\blost\b.{0,20}\b(money|rupe*e*s?|amount|₹|rs\.?|inr|lakh|crore|bucks)\b",
+    r"\blost\b\s?\d+",
+    r"\b(lost|stolen|robbed)\b.*\b(money|funds|savings|amt)\b",
     r"\b(upi|paytm|gpay|phonepe|neft|imps|rtgs)\b.{0,30}\b(fraud|scam|unauthorized|hack)\b",
     r"\bbank account\b.{0,30}\b(hack|fraud|unauthorized|debit)\b",
     r"\b(otp|cvv|pin)\b.{0,30}\b(shared|gave|told|entered)\b",

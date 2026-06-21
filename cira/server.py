@@ -85,6 +85,7 @@ async def get_playbook(subcategory_id: str):
 @app.post("/api/chat")
 async def chat_handler(req: ChatRequest):
     """Handle chat message logic and stage transitions via stateful verifier loop."""
+    print("--- CHAT HANDLER: Received request ---")
     try:
         from case_state import CaseState
         from triage import detect_financial_loss_regex, detect_financial_loss_llm, build_triage_notice
@@ -99,6 +100,7 @@ async def chat_handler(req: ChatRequest):
         from evidence_registry import CATEGORIES
         import re
 
+        print("--- CHAT HANDLER: Parsing request data ---")
         messages = list(req.messages)
         stage = req.stage
         classification = req.classification
@@ -160,11 +162,21 @@ async def chat_handler(req: ChatRequest):
         # Prepend system prompt for Agent call
         agent_messages = [{"role": "system", "content": agent_prompt}] + history
 
-        # Call Agent
-        agent_output, raw_reply = call_agent(agent_messages)
-
-        # Call Verifier
-        verifier_output, _ = call_verifier(verifier_prompt, history, agent_output)
+        # Call Agent and Verifier in parallel to minimize latency
+        import asyncio
+        import time
+        t_start = time.time()
+        print("--- CHAT HANDLER: Calling agent and verifier in parallel ---")
+        
+        agent_task = asyncio.to_thread(call_agent, agent_messages)
+        verifier_task = asyncio.to_thread(call_verifier, verifier_prompt, history, {})
+        
+        agent_res, verifier_res = await asyncio.gather(agent_task, verifier_task)
+        agent_output, raw_reply = agent_res
+        verifier_output, _ = verifier_res
+        
+        print(f"--- CHAT HANDLER: Agent and verifier returned in {time.time() - t_start:.2f} seconds ---")
+        print("--- CHAT HANDLER: Verifier returned status:", verifier_output["status"], "---")
 
         # Apply verifier output
         case.apply_verifier_output(verifier_output)
@@ -173,6 +185,7 @@ async def chat_handler(req: ChatRequest):
         last_verifier_status = verifier_output["status"]
 
         if last_verifier_status == "verified":
+            print("--- CHAT HANDLER: Calling agent (completion pass) ---")
             completion_feedback = {
                 **verifier_output,
                 "feedback_to_investigator": (
@@ -182,10 +195,13 @@ async def chat_handler(req: ChatRequest):
                 )
             }
             agent_output, raw_reply = call_agent(agent_messages, completion_feedback)
+            print("--- CHAT HANDLER: Agent (completion pass) returned successfully ---")
             is_complete = True
             case.phase = "REPORT_READY"
         else:
-            agent_output, raw_reply = call_agent(agent_messages, verifier_output)
+            # Skip the second pass for normal turns to keep response times low.
+            # The verifier output is still applied to the CaseState and reflected in the UI.
+            print("--- CHAT HANDLER: Skipping agent second pass for low latency ---")
             is_complete = False
             case.phase = "INTERVIEWING"
 
