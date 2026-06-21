@@ -6,7 +6,7 @@ import io
 import datetime
 from typing import List, Dict, Any, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
@@ -152,7 +152,20 @@ async def chat_handler(req: ChatRequest):
         "evidence": evidence
     }
 
+@app.post("/api/transcribe")
+async def api_transcribe(file: UploadFile = File(...)):
+    """Transcribe uploaded audio file using Groq Whisper model."""
+    try:
+        file_bytes = await file.read()
+        filename = file.filename or "audio.webm"
+        from utils.groq_client import transcribe_audio
+        text = transcribe_audio(file_bytes, filename)
+        return {"text": text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/generate-summary")
+
 async def api_generate_summary(req: SummaryRequest):
     """Generate case summary and timeline via AI models."""
     case_data = {

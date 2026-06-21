@@ -314,3 +314,16 @@ Respond with ONLY valid JSON (no markdown wrapping, no text outside JSON) in thi
     except Exception as e:
         return {"error": f"Groq API error: {str(e)}"}
 
+
+def transcribe_audio(file_bytes: bytes, filename: str) -> str:
+    """Transcribe audio bytes using Groq's whisper-large-v3 model."""
+    client = _ensure_client()
+    transcription = client.audio.transcriptions.create(
+        file=(filename, file_bytes),
+        model="whisper-large-v3",
+        temperature=0,
+        response_format="verbose_json",
+    )
+    return transcription.text
+
+
