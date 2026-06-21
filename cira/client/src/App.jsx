@@ -501,24 +501,27 @@ export default function App() {
   const missingEvidence = evidenceItemsList.filter(it => !evidence[it.id]);
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-[#F0F2F5]">
+    <div className="glass-app h-screen overflow-hidden flex flex-col">
       
       {/* ── TOP HEADER BAR ── */}
-      <div className="bg-white px-6 py-3 border-b border-gray-200 shadow-sm flex items-center justify-between z-10">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#0B3C5D] rounded-lg text-yellow-400 flex items-center justify-center">
+      <header className="glass-header px-6 py-3 flex items-center justify-between z-10">
+        <div className="cira-brand">
+          <div className="cira-brand__mark" aria-hidden="true">
             <Shield className="w-5 h-5" />
           </div>
-          <div>
-            <div className="text-md font-bold text-gray-900 leading-tight">Cyber Incident Response Assistant</div>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
+          <div className="min-w-0">
+            <div className="cira-brand__title-row">
+              <h1 className="cira-brand__title">CIRA<span>.</span></h1>
+              <span className="cira-brand__descriptor">Cyber Incident Response Assistant</span>
+            </div>
+            <div className="cira-brand__meta">
               AI-Powered Cybercrime Incident Response &nbsp;·&nbsp; India &nbsp;·&nbsp; 1930 Helpline Active
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 border border-green-200 rounded-full text-xs font-semibold text-green-700">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50/70 border border-emerald-200/80 rounded-full text-xs font-semibold text-emerald-800">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             AI Active
           </div>
@@ -539,10 +542,10 @@ export default function App() {
             Reset
           </button>
         </div>
-      </div>
+      </header>
 
       {/* ── MAIN WORKSPACE ── */}
-      <div className="flex-1 flex overflow-hidden p-4 gap-4">
+      <main className="glass-workspace flex-1 flex overflow-hidden p-4 gap-4">
 
         {/* ── LEFT COLUMN (Helplines & Exports) ── */}
         <div className="w-[20%] flex flex-col gap-4 overflow-y-auto custom-scrollbar pr-1">
@@ -576,7 +579,7 @@ export default function App() {
           {/* Action cards */}
           <div className="flex flex-col gap-2">
             {getEmergencyActions().map((action, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all">
+              <div key={i} className="glass-tile rounded-xl p-3 transition-all">
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className={`text-[9px] font-black text-white px-1.5 py-0.5 rounded uppercase tracking-wider ${action.color}`}>
                     {action.badge}
@@ -598,7 +601,7 @@ export default function App() {
             </div>
 
             {/* Status list Box */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+            <div className="glass-panel rounded-xl p-4 flex flex-col gap-3">
               
               {/* Classification */}
               <div className="flex items-center gap-2.5">
@@ -663,22 +666,22 @@ export default function App() {
               <div className="flex flex-col gap-2 mt-2">
                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Export Report Package</span>
                 
-                <button onClick={() => handleExport('pdf')} className="flex items-center gap-2 w-full text-left px-3 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm">
+                <button onClick={() => handleExport('pdf')} className="glass-tile flex items-center gap-2 w-full text-left px-3 py-2 text-gray-700 text-xs font-semibold rounded-lg">
                   <FileText className="w-4 h-4 text-red-500" />
                   Download PDF Report
                 </button>
                 
-                <button onClick={() => handleExport('txt')} className="flex items-center gap-2 w-full text-left px-3 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm">
+                <button onClick={() => handleExport('txt')} className="glass-tile flex items-center gap-2 w-full text-left px-3 py-2 text-gray-700 text-xs font-semibold rounded-lg">
                   <FileText className="w-4 h-4 text-blue-500" />
                   Download TXT File
                 </button>
 
-                <button onClick={() => handleExport('md')} className="flex items-center gap-2 w-full text-left px-3 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm">
+                <button onClick={() => handleExport('md')} className="glass-tile flex items-center gap-2 w-full text-left px-3 py-2 text-gray-700 text-xs font-semibold rounded-lg">
                   <FileText className="w-4 h-4 text-gray-600" />
                   Download Markdown
                 </button>
 
-                <button onClick={() => handleExport('html')} className="flex items-center gap-2 w-full text-left px-3 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm">
+                <button onClick={() => handleExport('html')} className="glass-tile flex items-center gap-2 w-full text-left px-3 py-2 text-gray-700 text-xs font-semibold rounded-lg">
                   <Printer className="w-4 h-4 text-green-500" />
                   Print Layout View
                 </button>
@@ -692,7 +695,7 @@ export default function App() {
         <div className="w-[55%] flex flex-col gap-4 overflow-hidden px-1 h-full min-h-0">
           
           {/* Chat Feed Box */}
-          <div className="bg-white border border-gray-200 rounded-2xl flex flex-col flex-1 min-h-0 shadow-sm relative overflow-hidden">
+          <div className="glass-panel rounded-2xl flex flex-col flex-1 min-h-0 relative overflow-hidden">
             
             {/* Messages Feed */}
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
@@ -712,7 +715,7 @@ export default function App() {
                   </p>
 
                   <div className="grid grid-cols-3 gap-3 w-full max-w-lg mt-8 px-4">
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex flex-col items-center">
+                    <div className="glass-tile rounded-xl p-3 flex flex-col items-center">
                       <div className="p-1.5 bg-green-50 text-green-600 rounded-lg mb-2">
                         <Shield className="w-4 h-4" />
                       </div>
@@ -720,7 +723,7 @@ export default function App() {
                       <p className="text-[9px] text-gray-500 text-center mt-0.5">Your inputs remain fully confidential.</p>
                     </div>
 
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex flex-col items-center">
+                    <div className="glass-tile rounded-xl p-3 flex flex-col items-center">
                       <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg mb-2">
                         <Cpu className="w-4 h-4" />
                       </div>
@@ -728,7 +731,7 @@ export default function App() {
                       <p className="text-[9px] text-gray-500 text-center mt-0.5">Automated playbook recommendations.</p>
                     </div>
 
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex flex-col items-center">
+                    <div className="glass-tile rounded-xl p-3 flex flex-col items-center">
                       <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg mb-2">
                         <Building className="w-4 h-4" />
                       </div>
@@ -814,8 +817,8 @@ export default function App() {
             </div>
 
             {/* Chat Input Pinned Footer */}
-            <div className="p-4 border-t border-gray-150 bg-white">
-              <div className="flex items-center border border-gray-250 rounded-xl bg-white px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+            <div className="glass-composer p-4">
+              <div className="glass-input flex items-center rounded-xl px-3 py-1.5">
                 <input
                   type="text"
                   value={userInput}
@@ -831,7 +834,7 @@ export default function App() {
                           ? "Evidence checklist open below. You can still message..." 
                           : "Tell me what happened — I'm here to help..."
                   }
-                  className="flex-1 bg-transparent border-none outline-none text-xs text-gray-700 placeholder-gray-400 py-1"
+                  className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder:text-slate-400 py-1"
                 />
 
                 {/* Voice Input Button */}
@@ -869,7 +872,7 @@ export default function App() {
           </div>
 
           {/* Active Case File Box */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
+          <div className="glass-panel rounded-2xl p-5 flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
             
             {/* Header / Classification dropdown */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-2.5 flex-shrink-0">
@@ -895,7 +898,7 @@ export default function App() {
                 <select
                   value={classification?.subcategory_id || ''}
                   onChange={e => handleClassificationOverride(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#0B3C5D]"
+                  className="glass-select w-full px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none"
                 >
                   <option value="" disabled>-- Select manual category override --</option>
                   {config.subcategories.map(sub => {
@@ -932,10 +935,10 @@ export default function App() {
                       setSummary(e.target.value);
                     }}
                     rows={4}
-                    className="w-full p-3 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#0B3C5D]"
+                    className="glass-field w-full p-3 rounded-lg text-xs focus:outline-none"
                   />
                 ) : (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-600 leading-relaxed min-h-[70px]">
+                  <div className="glass-tile rounded-lg p-3 text-xs text-gray-600 leading-relaxed min-h-[70px]">
                     {summary || (
                       <span className="text-gray-400 italic">No summary generated. Fill in the chat inputs to compile your incident.</span>
                     )}
@@ -958,7 +961,7 @@ export default function App() {
                   )}
                 </div>
                 
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="glass-tile rounded-lg overflow-hidden">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold">
@@ -1019,7 +1022,7 @@ export default function App() {
         <div className="w-[25%] flex flex-col gap-4 overflow-y-auto custom-scrollbar pl-1">
           
           {/* Incident Playbook Card */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+          <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3">
             
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -1081,7 +1084,7 @@ export default function App() {
           </div>
 
           {/* Trending Scam Alerts Carousel */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+          <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3">
             
             {/* Header */}
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
@@ -1174,7 +1177,7 @@ export default function App() {
 
         </div>
 
-      </div>
+      </main>
 
     </div>
   );

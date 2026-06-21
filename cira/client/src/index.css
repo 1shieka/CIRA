@@ -14,9 +14,208 @@
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background-color: #F0F2F5;
+  background: #061321;
   color: #1D2731;
   overflow: hidden;
+}
+
+/* Glass workspace tokens. The light panels keep administrative content readable
+   while the dark ambient canvas gives the interface depth. */
+.glass-app {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.28), transparent 28rem),
+    radial-gradient(circle at 92% 15%, rgba(129, 140, 248, 0.23), transparent 25rem),
+    radial-gradient(circle at 58% 100%, rgba(20, 184, 166, 0.18), transparent 31rem),
+    linear-gradient(135deg, #061321 0%, #0a2133 46%, #102838 100%);
+}
+
+.glass-app::before,
+.glass-app::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(2px);
+}
+
+.glass-app::before {
+  width: 22rem;
+  height: 22rem;
+  top: 35%;
+  left: 28%;
+  background: rgba(56, 189, 248, 0.11);
+}
+
+.glass-app::after {
+  width: 18rem;
+  height: 18rem;
+  top: 45%;
+  right: 3%;
+  background: rgba(167, 139, 250, 0.12);
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.70);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.66);
+  box-shadow: 0 12px 35px rgba(2, 12, 27, 0.14);
+  backdrop-filter: blur(22px) saturate(145%);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+}
+
+/* Product identity: intentionally high contrast so the app is recognizable at a glance. */
+.cira-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.cira-brand__mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #fef3c7;
+  border: 1px solid rgba(125, 211, 252, 0.38);
+  border-radius: 0.8rem;
+  background: linear-gradient(145deg, #145b85 0%, #082d47 100%);
+  box-shadow: 0 7px 18px rgba(8, 47, 73, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.17);
+}
+
+.cira-brand__title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.cira-brand__title {
+  margin: 0;
+  color: #082d47;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.cira-brand__title span {
+  color: #0ea5e9;
+}
+
+.cira-brand__descriptor {
+  overflow: hidden;
+  color: #334155;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cira-brand__meta {
+  margin-top: 0.22rem;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .cira-brand__descriptor,
+  .cira-brand__meta {
+    display: none;
+  }
+}
+
+.glass-workspace {
+  position: relative;
+  z-index: 0;
+}
+
+.glass-panel,
+.glass-tile {
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 16px 38px rgba(2, 12, 27, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+
+.glass-tile {
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: 0 8px 24px rgba(2, 12, 27, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.60);
+}
+
+.glass-tile:hover {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 13px 28px rgba(2, 12, 27, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.glass-composer {
+  border-top: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Requested black glass input: #070b14 at exactly 70% opacity. */
+.glass-input {
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  background: rgba(7, 11, 20, 0.70);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(2, 12, 27, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.glass-input:focus-within {
+  border-color: rgba(56, 189, 248, 0.86);
+  background: rgba(7, 11, 20, 0.76);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.17), inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 12px 28px rgba(2, 12, 27, 0.25);
+}
+
+.glass-field,
+.glass-select {
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.glass-field:focus,
+.glass-select:focus {
+  border-color: rgba(14, 116, 144, 0.75);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.14);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.78);
+}
+
+@media (max-width: 1024px) {
+  body { overflow: auto; }
+  .glass-app { height: auto; min-height: 100vh; overflow: visible; }
+  .glass-workspace { flex-direction: column; overflow: visible; }
+  .glass-workspace > div { width: 100%; overflow: visible; }
 }
 
 @layer utilities {

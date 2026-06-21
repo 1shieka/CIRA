@@ -142,7 +142,7 @@ def handle_category_select(subcategory_id: str):
     trigger_ai_summary_timeline()
 
 # --- Main App Orchestration ---
-def main():
+def legacy_workspace():
     st.set_page_config(
         page_title="CFRO — Cyber First Response Officer",
         layout="wide",
@@ -638,6 +638,75 @@ def main():
             color: #6B7280 !important;
             line-height: 1.35 !important;
             margin: 0 !important;
+        }
+
+        /* ── Glass workspace overrides ─────────────────────── */
+        html, body, [data-testid="stAppViewContainer"] {
+            background:
+                radial-gradient(circle at 10% 8%, rgba(56, 189, 248, 0.28), transparent 30rem),
+                radial-gradient(circle at 92% 14%, rgba(129, 140, 248, 0.24), transparent 26rem),
+                radial-gradient(circle at 56% 100%, rgba(20, 184, 166, 0.16), transparent 31rem),
+                linear-gradient(135deg, #061321 0%, #0a2133 48%, #102838 100%) !important;
+            background-attachment: fixed !important;
+        }
+        [data-testid="stAppViewContainer"] > .main {
+            background: transparent !important;
+        }
+        div[data-element-id="top_header_container"] {
+            background: rgba(255, 255, 255, 0.70) !important;
+            border: 1px solid rgba(255, 255, 255, 0.66) !important;
+            border-width: 0 0 1px 0 !important;
+            box-shadow: 0 12px 35px rgba(2, 12, 27, 0.18) !important;
+            backdrop-filter: blur(22px) saturate(145%) !important;
+            -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
+        }
+        div[data-element-id="left_sidebar_container"],
+        div[data-testid="stColumn"]:has([data-testid="stChatMessage"]) > div[data-testid="stVerticalBlock"],
+        .panel-card,
+        .feature-card {
+            background: rgba(255, 255, 255, 0.64) !important;
+            border: 1px solid rgba(255, 255, 255, 0.66) !important;
+            box-shadow: 0 16px 38px rgba(2, 12, 27, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.66) !important;
+            backdrop-filter: blur(18px) saturate(135%) !important;
+            -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+        }
+        div[data-element-id="left_sidebar_container"] {
+            background: rgba(255, 255, 255, 0.48) !important;
+        }
+        div[data-testid="stColumn"]:has([data-testid="stChatMessage"]) [data-testid="stBottom"] {
+            background: rgba(255, 255, 255, 0.30) !important;
+            border-top-color: rgba(148, 163, 184, 0.28) !important;
+            backdrop-filter: blur(16px) !important;
+        }
+
+        /* Black glass input surface — #070B14 at 70% opacity. */
+        div[data-testid="stChatInput"],
+        div[data-testid="stTextInput"] input,
+        div[data-testid="stTextArea"] textarea {
+            background: rgba(7, 11, 20, 0.70) !important;
+            color: #F8FAFC !important;
+            border: 1px solid rgba(148, 163, 184, 0.38) !important;
+            border-radius: 10px !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(2, 12, 27, 0.15) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+        }
+        div[data-testid="stChatInput"] textarea,
+        div[data-testid="stTextInput"] input,
+        div[data-testid="stTextArea"] textarea {
+            color: #F8FAFC !important;
+            caret-color: #7DD3FC !important;
+        }
+        div[data-testid="stChatInput"] textarea::placeholder,
+        div[data-testid="stTextInput"] input::placeholder,
+        div[data-testid="stTextArea"] textarea::placeholder {
+            color: #94A3B8 !important;
+        }
+        div[data-testid="stChatInput"]:focus-within,
+        div[data-testid="stTextInput"]:focus-within input,
+        div[data-testid="stTextArea"]:focus-within textarea {
+            border-color: rgba(56, 189, 248, 0.86) !important;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.17), inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 12px 28px rgba(2, 12, 27, 0.25) !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -1149,6 +1218,65 @@ Respond in 3-4 sentences: reassuring, practical, action-oriented. Mention helpli
                         with st.spinner("Regenerating..."):
                             trigger_ai_summary_timeline()
                         st.rerun()
+
+
+def main():
+    """Render the focused, single-prompt interface."""
+    st.set_page_config(
+        page_title="CIRA",
+        page_icon="◈",
+        layout="wide",
+        initial_sidebar_state="collapsed",
+    )
+
+    st.markdown(
+        """
+        <style>
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+            min-height: 100%;
+            background: #FFFFFF !important;
+        }
+        header[data-testid="stHeader"], footer, [data-testid="stSidebar"] { display: none !important; }
+        .block-container {
+            min-height: 100vh;
+            max-width: 820px !important;
+            padding: clamp(2rem, 24vh, 13rem) 1.25rem !important;
+            display: flex;
+            align-items: center;
+        }
+        .block-container > div { width: 100%; }
+        [data-testid="stTextArea"] { width: 100%; }
+        [data-testid="stTextArea"] label { display: none !important; }
+        [data-testid="stTextArea"] textarea {
+            min-height: 148px !important;
+            padding: 1.1rem 1.25rem !important;
+            border: 1px solid #D9D9E3 !important;
+            border-radius: 20px !important;
+            background: #FFFFFF !important;
+            color: #1F2937 !important;
+            caret-color: #10A37F !important;
+            font: 400 1rem/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(0, 0, 0, 0.05) !important;
+            resize: none !important;
+            transition: border-color 160ms ease, box-shadow 160ms ease;
+        }
+        [data-testid="stTextArea"] textarea::placeholder { color: #8E8EA0 !important; opacity: 1; }
+        [data-testid="stTextArea"] textarea:focus {
+            border-color: #10A37F !important;
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.14), 0 3px 10px rgba(0, 0, 0, 0.10) !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.text_area(
+        "Prompt",
+        key="prompt",
+        height=148,
+        label_visibility="collapsed",
+        placeholder="Message CIRA...",
+    )
 
 
 if __name__ == "__main__":

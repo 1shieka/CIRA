@@ -90,4 +90,5 @@ python scripts/generate_playbooks.py
 
 ## License
 
-Internal / operator use — playbook content pending.
+This project is available under the [MIT License](../LICENSE). Copyright © 2026
+Vanshika Rawat. Contact: one.shika16@gmail.com.
