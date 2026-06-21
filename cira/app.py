@@ -1291,32 +1291,26 @@ def render_active_playbook() -> None:
     """Render the playbook associated with the most recent agent classification."""
     classification = st.session_state.get("active_classification")
     playbook = st.session_state.get("active_playbook")
+    if not classification or not playbook:
+        return
+
     with st.container(key="active_playbook_container"):
         st.markdown('<p class="active-playbook-kicker">Active playbook</p>', unsafe_allow_html=True)
-
-        if not classification or not playbook:
-            st.markdown('<h2 class="active-playbook-title">Waiting for your message</h2>', unsafe_allow_html=True)
-            st.markdown(
-                '<p class="active-playbook-copy">Describe the incident in the chat. '
-                'CIRA will classify it and open the relevant response guide here.</p>',
-                unsafe_allow_html=True,
-            )
+        st.markdown(
+            f'<h2 class="active-playbook-title">{classification["subcategory_name"]}</h2>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<p class="active-playbook-copy">{classification["category_name"]} · '
+            f'{round(classification["match_confidence"] * 100)}% confidence</p>',
+            unsafe_allow_html=True,
+        )
+        if playbook.get("available"):
+            for section, content in playbook.get("sections", {}).items():
+                with st.expander(section, expanded=section == next(iter(playbook["sections"]), None)):
+                    st.markdown(content)
         else:
-            st.markdown(
-                f'<h2 class="active-playbook-title">{classification["subcategory_name"]}</h2>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                f'<p class="active-playbook-copy">{classification["category_name"]} · '
-                f'{round(classification["match_confidence"] * 100)}% confidence</p>',
-                unsafe_allow_html=True,
-            )
-            if playbook.get("available"):
-                for section, content in playbook.get("sections", {}).items():
-                    with st.expander(section, expanded=section == next(iter(playbook["sections"]), None)):
-                        st.markdown(content)
-            else:
-                st.info(playbook.get("message", "This playbook is not available yet."))
+            st.info(playbook.get("message", "This playbook is not available yet."))
 
 
 def main():
@@ -1435,29 +1429,27 @@ def main():
             font: 650 1rem/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
             margin: 1.5rem 0 0.6rem !important;
         }
+        /* Free, card-less playbook surface — scrolls within the viewport. */
         div.st-key-active_playbook_container {
-            min-height: 330px;
-            max-height: calc(100vh - 14rem);
+            min-height: 280px;
+            max-height: calc(100vh - 13rem);
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 1.4rem;
-            border: 1px solid #E5E7EB;
-            border-radius: 18px;
-            background: #FAFAFA;
-            /* keep the kicker/title visible while content scrolls under it */
+            padding: 0.25rem 0.75rem 1rem 0.25rem;
+            border: none;
+            background: transparent;
             scroll-behavior: smooth;
             overscroll-behavior: contain;
         }
         div.st-key-active_playbook_container::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         div.st-key-active_playbook_container::-webkit-scrollbar-track {
             background: transparent;
         }
         div.st-key-active_playbook_container::-webkit-scrollbar-thumb {
-            background: #D1D5DB;
+            background: #E1E3E8;
             border-radius: 999px;
-            border: 2px solid #FAFAFA;
         }
         div.st-key-active_playbook_container::-webkit-scrollbar-thumb:hover {
             background: #10A37F;
@@ -1665,13 +1657,22 @@ def main():
                 classify_chat_message(pending)
             st.rerun()
 
-    chat_col, playbook_col = st.columns([1.65, 1], gap="large")
+    has_active_playbook = bool(
+        st.session_state.active_classification and st.session_state.active_playbook
+    )
+    if has_active_playbook:
+        chat_col, playbook_col = st.columns([1.65, 1], gap="large")
+    else:
+        chat_col = st.container()
+        playbook_col = None
+
     with chat_col:
         for chat_message in st.session_state.chat_messages:
             with st.chat_message(chat_message["role"]):
                 st.markdown(chat_message["content"])
-    with playbook_col:
-        render_active_playbook()
+    if playbook_col is not None:
+        with playbook_col:
+            render_active_playbook()
 
     user_message = st.chat_input("Message CIRA…")
     if user_message:
