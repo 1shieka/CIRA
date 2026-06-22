@@ -1886,8 +1886,7 @@ def main():
                 if chip_cols[idx % 2].button(label, key=f"suggestion_{idx}"):
                     pending = prompt
         if pending:
-            with st.spinner("Investigation Officer is reviewing your case…"):
-                run_investigation_turn(pending)
+            run_investigation_turn(pending)
             st.rerun()
 
     has_active_playbook = bool(
@@ -1919,11 +1918,10 @@ def main():
     # network-bound agent call starts. This keeps the conversation responsive
     # instead of making the user wait for the assistant response to see it.
     if pending_agent_message:
-        with st.spinner("Investigation Officer is reviewing your case…"):
-            run_investigation_turn(
-                pending_agent_message,
-                user_message_already_rendered=True,
-            )
+        run_investigation_turn(
+            pending_agent_message,
+            user_message_already_rendered=True,
+        )
         del st.session_state.pending_agent_message
         st.rerun()
 
