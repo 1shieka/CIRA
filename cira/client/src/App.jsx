@@ -790,7 +790,9 @@ export default function App() {
                         <div className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm ${
                           isAssistant ? 'bg-gray-100 text-gray-800 rounded-tl-none' : 'bg-[#0B3C5D] text-white rounded-tr-none'
                         }`}>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]} className="chat-markdown" children={msg.content || ''} />
+                          <div className="chat-markdown">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} children={msg.content || ''} />
+                          </div>
                         </div>
 
                         {/* Render Inline Checkbox checklist under the text bubble if msg.type is evidence_checklist */}
