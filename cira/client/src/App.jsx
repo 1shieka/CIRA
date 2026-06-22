@@ -30,6 +30,39 @@ import {
 
 const API_BASE = `http://${window.location.hostname}:8000`;
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 max-w-md mx-auto my-10 bg-red-50 border border-red-200 rounded-xl text-center shadow-lg">
+          <h2 className="text-red-700 font-bold mb-2 text-sm">Application Error</h2>
+          <p className="text-[11px] text-red-600 mb-4 font-mono">{this.state.error?.toString()}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-[#0B3C5D] hover:bg-[#0B3C5D]/90 text-white text-xs font-bold rounded-lg shadow-sm transition-all"
+          >
+            Reload Page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   // Config & catalog data from backend
   const [config, setConfig] = useState({
@@ -501,7 +534,8 @@ export default function App() {
   const missingEvidence = evidenceItemsList.filter(it => !evidence[it.id]);
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-[#F0F2F5]">
+    <ErrorBoundary>
+      <div className="h-screen overflow-hidden flex flex-col bg-[#F0F2F5]">
       
       {/* ── TOP HEADER BAR ── */}
       <div className="bg-white px-6 py-3 border-b border-gray-200 shadow-sm flex items-center justify-between z-10">
@@ -756,9 +790,7 @@ export default function App() {
                         <div className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm ${
                           isAssistant ? 'bg-gray-100 text-gray-800 rounded-tl-none' : 'bg-[#0B3C5D] text-white rounded-tr-none'
                         }`}>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]} className="chat-markdown">
-                            {msg.content}
-                          </ReactMarkdown>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]} className="chat-markdown" children={msg.content || ''} />
                         </div>
 
                         {/* Render Inline Checkbox checklist under the text bubble if msg.type is evidence_checklist */}
@@ -1178,6 +1210,7 @@ export default function App() {
 
       </div>
 
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
