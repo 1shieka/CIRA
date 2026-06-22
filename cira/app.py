@@ -1280,6 +1280,41 @@ def initialise_investigation_agent() -> None:
     st.session_state.verifier_prompt = load_verifier_prompt(evaluation_matrix)
 
 
+def build_agent_pdf_case_data(final_summary: str) -> dict:
+    """Adapt the agent conversation to the existing CIRA PDF report schema."""
+    messages = st.session_state.get("chat_messages", [])
+    user_messages = [
+        message["content"]
+        for message in messages
+        if message.get("role") == "user"
+    ]
+    classification = st.session_state.get("active_classification")
+    category_id = classification.get("category_id") if classification else None
+
+    timeline = [
+        {"time": f"User message {index}", "event": message[:180]}
+        for index, message in enumerate(user_messages, start=1)
+    ]
+    return {
+        "description": user_messages[0] if user_messages else "",
+        "classification": classification,
+        "summary": final_summary,
+        "timeline": timeline,
+        "evidence": {},
+        "followup_answers": {},
+        "evidence_labels": get_evidence_labels_map(category_id),
+        "questions_labels": {},
+    }
+
+
+def generate_final_report_pdf(final_summary: str) -> bytes | None:
+    """Create a downloadable PDF without preventing the final response from rendering."""
+    try:
+        return bytes(generate_pdf_report(build_agent_pdf_case_data(final_summary)))
+    except Exception:
+        return None
+
+
 def run_investigation_turn(message: str, *, user_message_already_rendered: bool = False) -> None:
     """Run one full Investigation Officer and Evidence Verifier turn from agent.py."""
     if not user_message_already_rendered:
@@ -1334,6 +1369,8 @@ def run_investigation_turn(message: str, *, user_message_already_rendered: bool 
         )
 
     st.session_state.chat_messages.append({"role": "assistant", "content": reply})
+    if st.session_state.get("agent_status") == "complete":
+        st.session_state.final_report_pdf = generate_final_report_pdf(reply)
 
 
 def render_active_playbook() -> None:
@@ -1910,6 +1947,16 @@ def main():
                     '</span>',
                     unsafe_allow_html=True,
                 )
+        final_report_pdf = st.session_state.get("final_report_pdf")
+        if st.session_state.get("agent_status") == "complete" and final_report_pdf:
+            st.download_button(
+                "Download final report (PDF)",
+                data=final_report_pdf,
+                file_name="CIRA_case_report.pdf",
+                mime="application/pdf",
+                key="download_final_report_pdf",
+                use_container_width=False,
+            )
     if playbook_col is not None:
         with playbook_col:
             render_active_playbook()
