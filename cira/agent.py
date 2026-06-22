@@ -103,15 +103,16 @@ def call_agent(
     """Send the conversation to Azure OpenAI and return parsed agent output plus raw text."""
     prompt_messages = [*messages]
     if verifier_feedback:
+        feedback_str = verifier_feedback.get("feedback_to_investigator", "")
         prompt_messages.append(
             {
                 "role": "user",
                 "content": (
-                    "Internal verifier feedback. Use this to produce the next "
-                    "user-facing Investigation Officer reply. Do not mention the "
-                    "verifier, scores, or internal policy. Ask for the missing "
-                    "evidence gently and specifically.\n\n"
-                    f"{json.dumps(verifier_feedback, ensure_ascii=False, indent=2)}"
+                    "Internal verifier feedback/instruction:\n"
+                    f"\"{feedback_str}\"\n\n"
+                    "Do NOT mention the verifier, internal scores, or policy. "
+                    "You MUST ask ONLY ONE focused question corresponding to this feedback. "
+                    "Do not dump multiple questions or ask for multiple pieces of evidence at once."
                 ),
             }
         )
@@ -186,7 +187,7 @@ def call_verifier(
     feedback = parsed.get("feedback_to_investigator", "")
     if not isinstance(feedback, str) or not feedback.strip():
         feedback = (
-            "Ask one to three focused questions for the missing evidence required "
+            "Ask ONLY ONE focused question for the missing evidence required "
             "by the matched category in EVALUATION.md."
         )
 

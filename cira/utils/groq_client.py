@@ -14,6 +14,26 @@ GROQ_MODEL = "llama-3.3-70b-versatile"
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 _client: Groq | None = None
+_azure_client = None
+
+
+def _ensure_azure_client():
+    global _azure_client
+    api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
+
+    if not api_key or not endpoint:
+        return None
+
+    if _azure_client is None:
+        from openai import AzureOpenAI
+        _azure_client = AzureOpenAI(
+            api_key=api_key,
+            azure_endpoint=endpoint,
+            api_version=api_version,
+        )
+    return _azure_client
 
 
 def _get_api_key() -> str | None:
@@ -48,9 +68,33 @@ def _extract_json(text: str) -> dict:
 
 
 def _safe_groq_call(prompt: str) -> dict:
-    """Call Groq and return parsed JSON, or error dict on failure."""
+    """Call LLM and return parsed JSON, or error dict on failure. Tries Azure first, then Groq."""
+    azure_client = _ensure_azure_client()
+    if azure_client:
+        deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.4")
+        max_tokens = int(os.getenv("AZURE_OPENAI_MAX_COMPLETION_TOKENS", "16384"))
+        try:
+            print(f"--- _safe_llm_call: Routing to Azure OpenAI (deployment: {deployment}) ---")
+            try:
+                response = azure_client.chat.completions.create(
+                    model=deployment,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_completion_tokens=max_tokens,
+                )
+            except TypeError:
+                response = azure_client.chat.completions.create(
+                    model=deployment,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=max_tokens,
+                )
+            content = response.choices[0].message.content
+            if content:
+                return _extract_json(content)
+        except Exception as azure_err:
+            print(f"--- _safe_llm_call: Azure OpenAI failed: {azure_err}. Falling back to Groq ---")
+
+    client = _ensure_client()
     try:
-        client = _ensure_client()
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
@@ -63,11 +107,23 @@ def _safe_groq_call(prompt: str) -> dict:
         return {"error": str(e)}
     except Exception as e:
         err = str(e)
-        if "429" in err or "quota" in err.lower() or "rate" in err.lower():
-            return {"error": "Groq API rate limit reached. Please wait and try again."}
+        if "429" in err or "quota" in err.lower() or "rate" in err.lower() or "limit" in err.lower():
+            print(f"--- _safe_groq_call: Model {GROQ_MODEL} rate limited. Falling back to llama-3.1-8b-instant ---")
+            try:
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                content = response.choices[0].message.content
+                if not content:
+                    return {"error": "Empty response from Groq API (fallback)."}
+                return _extract_json(content)
+            except Exception as fallback_e:
+                return {"error": f"Groq API rate limit fallback failed: {str(fallback_e)}"}
         if "API key" in err or "401" in err or "403" in err or "invalid" in err.lower():
             return {"error": "Invalid or unauthorized GROQ_API_KEY."}
         return {"error": f"Groq API error: {err}"}
+
 
 
 def understand_incident(user_text: str, category_list: list[str]) -> dict:
@@ -328,9 +384,33 @@ def transcribe_audio(file_bytes: bytes, filename: str) -> str:
 
 
 def call_groq(messages: list[dict], temperature: float = 0.1) -> str:
-    """Call Groq chat completions using the global GROQ_MODEL."""
+    """Call LLM completions, trying Azure OpenAI (gpt-5.4) first, falling back to Groq on failure."""
+    azure_client = _ensure_azure_client()
+    if azure_client:
+        deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.4")
+        max_tokens = int(os.getenv("AZURE_OPENAI_MAX_COMPLETION_TOKENS", "16384"))
+        try:
+            print(f"--- call_llm: Routing to Azure OpenAI (deployment: {deployment}) ---")
+            try:
+                response = azure_client.chat.completions.create(
+                    model=deployment,
+                    messages=messages,
+                    temperature=temperature,
+                    max_completion_tokens=max_tokens,
+                )
+            except TypeError:
+                response = azure_client.chat.completions.create(
+                    model=deployment,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+            return response.choices[0].message.content or ""
+        except Exception as azure_err:
+            print(f"--- call_llm: Azure OpenAI failed: {azure_err}. Falling back to Groq ---")
+
+    client = _ensure_client()
     try:
-        client = _ensure_client()
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=messages,
@@ -338,7 +418,19 @@ def call_groq(messages: list[dict], temperature: float = 0.1) -> str:
         )
         return response.choices[0].message.content or ""
     except Exception as e:
-        raise RuntimeError(f"Groq API error in call_groq: {str(e)}")
+        err_str = str(e)
+        if "429" in err_str or "quota" in err_str.lower() or "rate" in err_str.lower() or "limit" in err_str.lower():
+            print(f"--- call_groq: Model {GROQ_MODEL} rate limited. Falling back to llama-3.1-8b-instant ---")
+            try:
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=messages,
+                    temperature=temperature,
+                )
+                return response.choices[0].message.content or ""
+            except Exception as fallback_e:
+                raise RuntimeError(f"Groq API error in call_groq (fallback failed): {str(fallback_e)}") from fallback_e
+        raise RuntimeError(f"Groq API error in call_groq: {err_str}") from e
 
 
 extract_json = _extract_json

@@ -9,7 +9,7 @@ class CiraReport(FPDF):
         # Header banner
         self.set_font('Helvetica', 'B', 12)
         self.set_text_color(30, 58, 138)  # Indigo
-        self.cell(0, 8, 'CIRA — CYBER INCIDENCE RESPONSE REPORT', border=0, ln=1, align='C')
+        self.cell(0, 8, 'CIRA - CYBER INCIDENCE RESPONSE REPORT', border=0, ln=1, align='C')
         self.set_font('Helvetica', 'I', 8)
         self.set_text_color(107, 114, 128)  # Gray
         self.cell(0, 4, 'Prepared by CIRA AI Cybercrime Case Officer', border=0, ln=1, align='C')

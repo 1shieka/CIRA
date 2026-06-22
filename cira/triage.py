@@ -81,13 +81,12 @@ def detect_financial_loss_llm(text: str, call_azure_openai) -> bool:
 
 
 URGENT_FINANCIAL_NOTICE = """\
-**If money has been taken or is at risk, act now — these steps work best in the first 30–60 minutes ("the golden hour"):**
+**If you are a victim of financial fraud, act now — these steps work best in the "golden hour" of the first 30 minutes to get your money back:**
 
-1. **Call 1930** (National Cyber Crime Helpline) right now. This can trigger an immediate hold on the funds before they move further.
-2. **File at https://cybercrime.gov.in/Webform/Accept.aspx** — this is the official portal that flags the transaction for a freeze across banks.
-3. **Call your bank's official fraud/dispute helpline** (use the number on your card or bank app — not a number anyone sent you) and ask them to block the transaction and freeze the receiving account.
+1. **Call 1930** and report on the website **https://cybercrime.gov.in/Webform/Accept.aspx** to automatically stop the funds into accounts.
+2. **Contact your bank** to stop the transfer of funds (use their official, verified helpline numbers, mobile apps, or official portal links).
 
-Do all three if you can — they work together, not as alternatives. I'll help you with the report and the details while you do this.
+These are the first steps. Please do not worry, it's not your fault and everything can be fixed. I will provide you assistance with reporting on the portal, including the exact category to register on.
 """
 
 

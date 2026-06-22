@@ -166,16 +166,11 @@ async def chat_handler(req: ChatRequest):
         import asyncio
         import time
         t_start = time.time()
-        print("--- CHAT HANDLER: Calling agent and verifier in parallel ---")
+        print("--- CHAT HANDLER: Calling verifier ---")
         
-        agent_task = asyncio.to_thread(call_agent, agent_messages)
-        verifier_task = asyncio.to_thread(call_verifier, verifier_prompt, history, {})
+        verifier_output, _ = await asyncio.to_thread(call_verifier, verifier_prompt, history, {})
         
-        agent_res, verifier_res = await asyncio.gather(agent_task, verifier_task)
-        agent_output, raw_reply = agent_res
-        verifier_output, _ = verifier_res
-        
-        print(f"--- CHAT HANDLER: Agent and verifier returned in {time.time() - t_start:.2f} seconds ---")
+        print(f"--- CHAT HANDLER: Verifier returned in {time.time() - t_start:.2f} seconds ---")
         print("--- CHAT HANDLER: Verifier returned status:", verifier_output["status"], "---")
 
         # Apply verifier output
@@ -194,14 +189,14 @@ async def chat_handler(req: ChatRequest):
                     "immediate next steps using a calm, supportive tone."
                 )
             }
-            agent_output, raw_reply = call_agent(agent_messages, completion_feedback)
+            agent_output, raw_reply = await asyncio.to_thread(call_agent, agent_messages, completion_feedback)
             print("--- CHAT HANDLER: Agent (completion pass) returned successfully ---")
             is_complete = True
             case.phase = "REPORT_READY"
         else:
-            # Skip the second pass for normal turns to keep response times low.
-            # The verifier output is still applied to the CaseState and reflected in the UI.
-            print("--- CHAT HANDLER: Skipping agent second pass for low latency ---")
+            print("--- CHAT HANDLER: Calling agent (investigation pass) ---")
+            agent_output, raw_reply = await asyncio.to_thread(call_agent, agent_messages, verifier_output)
+            print("--- CHAT HANDLER: Agent (investigation pass) returned successfully ---")
             is_complete = False
             case.phase = "INTERVIEWING"
 
@@ -219,16 +214,50 @@ async def chat_handler(req: ChatRequest):
         # 6. Build response state
         res_classification = classification
         if case.matched_category_id:
-            cat = CATEGORIES.get(case.matched_category_id)
-            if cat:
-                res_classification = {
-                    "category_id": case.matched_category_id,
-                    "category_name": "Cybercrime",
-                    "subcategory_id": case.matched_category_id,
-                    "subcategory_name": cat.display_name,
-                    "match_confidence": case.match_confidence,
-                    "needs_confirmation": False
-                }
+            from utils.classification_mapper import get_all_subcategories
+            EVAL_TO_PORTAL_MAP = {
+                "upi_fraud": "upi-related-frauds",
+                "banking_fraud": "internet-banking-related-fraud",
+                "sim_swap_fraud": "debit-credit-card-sim-swap-fraud",
+                "whatsapp_hijack": "cheating-by-impersonation",
+                "social_media_takeover": "profile-hacking-identity-theft",
+                "phishing_scam": "e-mail-phishing",
+                "qr_code_scam": "e-wallet-related-fraud",
+                "remote_access_scam": "unauthorised-access-data-breach",
+                "mobile_hacking_malware": "damage-to-computer-systems",
+                "investment_scam": "demat-depository-fraud",
+                "job_scam": "online-job-fraud",
+                "ecommerce_fraud": "any-other-cyber-crime",
+                "sextortion": "cyber-bullying-stalking-sexting",
+                "cyberbullying_harassment": "cyber-bullying-stalking-sexting",
+                "identity_theft": "profile-hacking-identity-theft",
+                "uncategorized_other": "any-other-cyber-crime",
+            }
+            
+            portal_id = EVAL_TO_PORTAL_MAP.get(case.matched_category_id)
+            if portal_id:
+                subcats = get_all_subcategories()
+                sub = next((s for s in subcats if s["id"] == portal_id), None)
+                if sub:
+                    res_classification = {
+                        "category_id": sub["category_id"],
+                        "category_name": "Cybercrime",
+                        "subcategory_id": sub["id"],
+                        "subcategory_name": sub["name"],
+                        "match_confidence": case.match_confidence,
+                        "needs_confirmation": False
+                    }
+            else:
+                cat = CATEGORIES.get(case.matched_category_id)
+                if cat:
+                    res_classification = {
+                        "category_id": case.matched_category_id,
+                        "category_name": "Cybercrime",
+                        "subcategory_id": case.matched_category_id,
+                        "subcategory_name": cat.display_name,
+                        "match_confidence": case.match_confidence,
+                        "needs_confirmation": False
+                    }
 
         res_evidence = {k: bool(v) for k, v in case.evidence_status.items()}
 
