@@ -1414,6 +1414,12 @@ def main():
         html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
             min-height: 100%;
             background: #FFFFFF !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+        }
+        [data-testid="stMain"] {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
         }
         header[data-testid="stHeader"], footer, [data-testid="stSidebar"] { display: none !important; }
         .block-container {
@@ -1518,9 +1524,8 @@ def main():
         /* Free, card-less playbook surface — scrolls within the viewport. */
         div.st-key-active_playbook_container {
             min-height: 280px;
-            max-height: calc(100vh - 13rem);
-            overflow-y: auto;
-            overflow-x: hidden;
+            max-height: none;
+            overflow: visible;
             padding: 0.25rem 0.75rem 1rem 0.25rem;
             border: none;
             background: transparent;
