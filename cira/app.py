@@ -30,6 +30,13 @@ from utils.azure_openai_client import call_azure_openai
 from utils.rule_engine import get_followup_questions
 from utils.pdf_generator import generate_pdf_report
 from utils.playbook_loader import load_playbook
+from agent import (
+    call_agent,
+    call_verifier,
+    load_agent_prompt,
+    load_evaluation_matrix,
+    load_verifier_prompt,
+)
 
 # --- Session State Configuration ---
 DEFAULT_SESSION = {
@@ -1261,30 +1268,71 @@ def render_playbook_library():
             st.markdown(playbook_path.read_text(encoding="utf-8"))
 
 
-def classify_chat_message(message: str) -> None:
-    """Classify a user message and retain the corresponding playbook selection."""
-    st.session_state.chat_messages.append({"role": "user", "content": message})
-    result = understand_incident(message, get_subcategory_names())
-
-    if "error" in result:
-        st.session_state.chat_messages.append({
-            "role": "assistant",
-            "content": "I couldn't classify that incident right now. Please try again with a little more detail.",
-        })
+def initialise_investigation_agent() -> None:
+    """Create the persistent agent.py conversation state for this browser session."""
+    if "agent_messages" in st.session_state:
         return
 
-    classification = map_to_official_category(result)
-    st.session_state.active_classification = classification
-    st.session_state.active_playbook = load_playbook(classification["subcategory_id"])
-    confidence = round(classification["match_confidence"] * 100)
-    st.session_state.chat_messages.append({
-        "role": "assistant",
-        "content": (
-            f"This appears to be **{classification['subcategory_name']}** "
-            f"({confidence}% confidence). I’ve opened the matching response playbook on the right.\n\n"
-            f"{result['summary']}"
-        ),
-    })
+    evaluation_matrix = load_evaluation_matrix()
+    st.session_state.agent_messages = [
+        {"role": "system", "content": load_agent_prompt(evaluation_matrix)}
+    ]
+    st.session_state.verifier_prompt = load_verifier_prompt(evaluation_matrix)
+
+
+def run_investigation_turn(message: str) -> None:
+    """Run one full Investigation Officer and Evidence Verifier turn from agent.py."""
+    st.session_state.chat_messages.append({"role": "user", "content": message})
+    initialise_investigation_agent()
+
+    # Classification is separate by design: agent.py investigates the case,
+    # while the official taxonomy determines which Markdown guide to display.
+    if not st.session_state.active_classification:
+        result = understand_incident(message, get_subcategory_names())
+        if "error" not in result:
+            classification = map_to_official_category(result)
+            st.session_state.active_classification = classification
+            st.session_state.active_playbook = load_playbook(classification["subcategory_id"])
+
+    agent_messages = st.session_state.agent_messages
+    agent_messages.append({"role": "user", "content": message})
+
+    try:
+        agent_output, raw_reply = call_agent(agent_messages)
+        verifier_output, _ = call_verifier(
+            st.session_state.verifier_prompt,
+            agent_messages,
+            agent_output,
+        )
+
+        if verifier_output["status"] == "verified":
+            if agent_output["status"] != "complete":
+                agent_output, raw_reply = call_agent(
+                    agent_messages,
+                    {
+                        **verifier_output,
+                        "feedback_to_investigator": (
+                            "The evidence is verified as report-ready. Produce the final case "
+                            "summary, timeline, available evidence, unknown details, and "
+                            "immediate next steps in a calm, supportive tone."
+                        ),
+                    },
+                )
+                agent_output["status"] = "complete"
+        else:
+            agent_output, raw_reply = call_agent(agent_messages, verifier_output)
+            agent_output["status"] = "investigating"
+
+        agent_messages.append({"role": "assistant", "content": raw_reply})
+        st.session_state.agent_status = agent_output["status"]
+        reply = agent_output["reply"]
+    except Exception:
+        reply = (
+            "I’m unable to reach the Investigation Officer right now. Please try again "
+            "shortly; if money was lost, call 1930 and contact your bank immediately."
+        )
+
+    st.session_state.chat_messages.append({"role": "assistant", "content": reply})
 
 
 def render_active_playbook() -> None:
@@ -1817,8 +1865,8 @@ def main():
                 if chip_cols[idx % 2].button(label, key=f"suggestion_{idx}"):
                     pending = prompt
         if pending:
-            with st.spinner("Classifying incident and loading response guide…"):
-                classify_chat_message(pending)
+            with st.spinner("Investigation Officer is reviewing your case…"):
+                run_investigation_turn(pending)
             st.rerun()
 
     has_active_playbook = bool(
@@ -1840,8 +1888,8 @@ def main():
 
     user_message = st.chat_input("Message CIRA…")
     if user_message:
-        with st.spinner("Classifying incident and loading response guide…"):
-            classify_chat_message(user_message)
+        with st.spinner("Investigation Officer is reviewing your case…"):
+            run_investigation_turn(user_message)
         st.rerun()
 
 
