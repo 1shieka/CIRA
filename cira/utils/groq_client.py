@@ -11,7 +11,7 @@ from groq import Groq
 # Model name — change here if needed
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
 _client: Groq | None = None
 _azure_client = None
