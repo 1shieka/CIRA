@@ -1452,6 +1452,12 @@ def main():
             padding: 0 1rem 2rem;
             box-sizing: border-box;
         }
+        @media (min-width: 1181px) {
+            div.st-key-conversation_workspace {
+                margin-right: 0;
+                margin-left: calc(30% - 260px);
+            }
+        }
         /* "Response playbook" launcher button */
         div.st-key-conversation_workspace .stButton > button {
             width: auto;
@@ -1462,7 +1468,7 @@ def main():
             color: #343541 !important;
             font: 600 0.85rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
             padding: 0.5rem 1rem !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+            box-shadow: none !important;
             transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
         }
         div.st-key-conversation_workspace .stButton > button:hover {
@@ -1727,7 +1733,7 @@ def main():
             box-shadow: none !important;
         }
         [data-testid="stBottom"] > div {
-            background: linear-gradient(to top, #FFFFFF 62%, rgba(255, 255, 255, 0)) !important;
+            background: #FFFFFF !important;
             padding-bottom: 1rem !important;
         }
         [data-testid="stBottomBlockContainer"] {
@@ -1744,7 +1750,7 @@ def main():
             border: 1px solid #E5E7EB !important;
             border-radius: 26px !important;
             background: #FFFFFF !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+            box-shadow: none !important;
             transition: border-color 160ms ease, box-shadow 160ms ease;
         }
         /* Strip the inner BaseWeb wrappers so only the shell shows, and let
@@ -1778,7 +1784,7 @@ def main():
         }
         [data-testid="stChatInput"]:focus-within {
             border-color: #10A37F !important;
-            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+            box-shadow: none !important;
         }
         /* ── Send button ─────────────────────────────────────── */
         [data-testid="stChatInputSubmitButton"] {
@@ -1835,13 +1841,14 @@ def main():
             left: 1.25rem !important;
             width: 15.5rem;
             z-index: 9999 !important;
-            transform: translateZ(0);
-            will-change: transform;
+            inset: 5rem auto auto 1.25rem !important;
+            transform: none !important;
+            will-change: auto;
             font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #FFFFFF;
             border-radius: 18px;
             padding: 1.15rem 1.1rem;
-            box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.05);
+            box-shadow: none;
         }
         .ea-card__kicker {
             margin: 0 0 0.2rem !important;
@@ -2036,23 +2043,6 @@ def main():
             unsafe_allow_html=True,
         )
 
-        # Starter suggestions to lower the cold-start friction.
-        suggestions = [
-            ("💸  UPI / payment fraud", "I lost money through a fraudulent UPI payment."),
-            ("📧  Phishing message", "I received a phishing email asking for my bank details."),
-            ("🔓  Hacked account", "My social media account has been hacked and I'm locked out."),
-            ("🚨  Blackmail / sextortion", "Someone is threatening to leak my private photos unless I pay."),
-        ]
-        pending = None
-        with st.container(key="suggestion_chips_container"):
-            chip_cols = st.columns(2, gap="small")
-            for idx, (label, prompt) in enumerate(suggestions):
-                if chip_cols[idx % 2].button(label, key=f"suggestion_{idx}"):
-                    pending = prompt
-        if pending:
-            run_investigation_turn(pending)
-            st.rerun()
-
     has_active_playbook = bool(
         st.session_state.active_classification and st.session_state.active_playbook
     )
@@ -2097,6 +2087,7 @@ def main():
 
     user_message = st.chat_input("Message CIRA…")
     if user_message:
+        first_classification = st.session_state.active_classification is None
         st.session_state.chat_messages.append({"role": "user", "content": user_message})
         with chat_feed:
             with st.chat_message("user"):
@@ -2121,6 +2112,8 @@ def main():
                             key="download_final_report_pdf_inline",
                             use_container_width=False,
                         )
+        if first_classification and st.session_state.active_playbook:
+            show_active_playbook_dialog()
 
 
 if __name__ == "__main__":
