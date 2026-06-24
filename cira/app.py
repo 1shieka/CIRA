@@ -1416,6 +1416,12 @@ def render_active_playbook() -> None:
             st.info(playbook.get("message", "This playbook is not available yet."))
 
 
+@st.dialog("Response playbook", width="large")
+def show_active_playbook_dialog() -> None:
+    """Display the currently classified Markdown playbook in a modal."""
+    render_active_playbook()
+
+
 def main():
     """Render the focused, single-prompt interface."""
     st.set_page_config(
@@ -2112,8 +2118,12 @@ def main():
                             key="download_final_report_pdf_inline",
                             use_container_width=False,
                         )
-        if first_classification and st.session_state.active_playbook:
-            show_active_playbook_dialog()
+        if first_classification:
+            # Columns are built at the top of the run, before the model has
+            # classified — so on the very first turn the right-hand playbook
+            # column doesn't exist yet. Rerun once so the layout reflows with
+            # the playbook docked on the right (a single, consistent render).
+            st.rerun()
 
 
 if __name__ == "__main__":
