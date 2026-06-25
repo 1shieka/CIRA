@@ -577,7 +577,7 @@ export default function App() {
             <div className="w-7 h-7 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
               <Bell className="w-4 h-4 text-red-500" />
             </div>
-            <span className="text-[11px] font-extrabold text-gray-800 uppercase tracking-widest">Emergency Actions</span>
+            <span className="text-[11px] font-extrabold text-slate-950 uppercase tracking-widest">Emergency Actions</span>
           </div>
 
           {/* Action cards */}
@@ -588,9 +588,9 @@ export default function App() {
                   <span className={`text-[9px] font-black text-white px-1.5 py-0.5 rounded uppercase tracking-wider ${action.color}`}>
                     {action.badge}
                   </span>
-                  <span className="text-xs font-bold text-gray-900 leading-none">{action.title}</span>
+                  <span className="text-xs font-bold text-slate-950 leading-none">{action.title}</span>
                 </div>
-                <p className="text-[10px] text-gray-500 leading-relaxed">{action.desc}</p>
+                <p className="text-[10px] text-slate-800 font-semibold leading-relaxed">{action.desc}</p>
               </div>
             ))}
           </div>
@@ -601,7 +601,7 @@ export default function App() {
               <div className="w-7 h-7 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Folder className="w-4 h-4 text-yellow-600 fill-current" />
               </div>
-              <span className="text-[11px] font-extrabold text-gray-800 uppercase tracking-widest">Complaint Package</span>
+              <span className="text-[11px] font-extrabold text-slate-950 uppercase tracking-widest">Complaint Package</span>
             </div>
 
             {/* Status list Box */}
@@ -616,7 +616,7 @@ export default function App() {
                 ) : (
                   <Clock className="w-4.5 h-4.5 text-gray-400 flex-shrink-0" />
                 )}
-                <span className={`text-xs ${classification ? 'text-gray-700 font-semibold' : 'text-gray-400 font-normal'}`}>
+                <span className={`text-xs ${classification ? 'text-slate-950 font-black' : 'text-slate-600 font-bold'}`}>
                   Classification {classification ? '' : '— pending'}
                 </span>
               </div>
@@ -630,7 +630,7 @@ export default function App() {
                 ) : (
                   <div className="w-4.5 h-4.5 rounded-full border border-blue-500 flex-shrink-0"></div>
                 )}
-                <span className={`text-xs ${summaryGenerated ? 'text-gray-700 font-semibold' : 'text-gray-400 font-normal'}`}>
+                <span className={`text-xs ${summaryGenerated ? 'text-slate-950 font-black' : 'text-slate-600 font-bold'}`}>
                   Summary Generated {summaryGenerated ? '' : '— pending'}
                 </span>
               </div>
@@ -644,7 +644,7 @@ export default function App() {
                 ) : (
                   <div className="w-4.5 h-4.5 rounded-full border border-blue-500 flex-shrink-0"></div>
                 )}
-                <span className={`text-xs ${summaryGenerated && timeline.length > 0 ? 'text-gray-700 font-semibold' : 'text-gray-400 font-normal'}`}>
+                <span className={`text-xs ${summaryGenerated && timeline.length > 0 ? 'text-slate-950 font-black' : 'text-slate-600 font-bold'}`}>
                   Timeline Compiled {summaryGenerated && timeline.length > 0 ? '' : '— pending'}
                 </span>
               </div>
@@ -658,7 +658,7 @@ export default function App() {
                 ) : (
                   <div className="w-4.5 h-4.5 rounded-full border border-blue-500 flex-shrink-0"></div>
                 )}
-                <span className={`text-xs ${validatedEvidence.length > 0 ? 'text-gray-700 font-semibold' : 'text-gray-400 font-normal'}`}>
+                <span className={`text-xs ${validatedEvidence.length > 0 ? 'text-slate-950 font-black' : 'text-slate-600 font-bold'}`}>
                   Evidence Logged {validatedEvidence.length > 0 ? '' : '— pending'}
                 </span>
               </div>
@@ -713,8 +713,8 @@ export default function App() {
                       <Cpu className="w-8 h-8" />
                     </div>
                   </div>
-                  <h3 className="text-base font-bold text-gray-900">Describe the incident</h3>
-                  <p className="text-xs text-gray-500 max-w-sm mt-1 px-4">
+                  <h3 className="text-base font-bold text-slate-950">Describe the incident</h3>
+                  <p className="text-xs text-slate-800 font-semibold max-w-sm mt-1 px-4">
                     Share as many details as you can. The more information you provide, the better I can classify and assist you.
                   </p>
 
@@ -723,24 +723,24 @@ export default function App() {
                       <div className="p-1.5 bg-green-50 text-green-600 rounded-lg mb-2">
                         <Shield className="w-4 h-4" />
                       </div>
-                      <span className="text-[10px] font-bold text-gray-900 text-center">Secure &amp; Private</span>
-                      <p className="text-[9px] text-gray-500 text-center mt-0.5">Your inputs remain fully confidential.</p>
+                      <span className="text-[10px] font-bold text-slate-950 text-center">Secure &amp; Private</span>
+                      <p className="text-[9px] text-slate-800 font-semibold text-center mt-0.5">Your inputs remain fully confidential.</p>
                     </div>
 
                     <div className="glass-tile rounded-xl p-3 flex flex-col items-center">
                       <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg mb-2">
                         <Cpu className="w-4 h-4" />
                       </div>
-                      <span className="text-[10px] font-bold text-gray-900 text-center">AI Diagnostics</span>
-                      <p className="text-[9px] text-gray-500 text-center mt-0.5">Automated playbook recommendations.</p>
+                      <span className="text-[10px] font-bold text-slate-950 text-center">AI Diagnostics</span>
+                      <p className="text-[9px] text-slate-800 font-semibold text-center mt-0.5">Automated playbook recommendations.</p>
                     </div>
 
                     <div className="glass-tile rounded-xl p-3 flex flex-col items-center">
                       <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg mb-2">
                         <Building className="w-4 h-4" />
                       </div>
-                      <span className="text-[10px] font-bold text-gray-900 text-center">Govt Aligned</span>
-                      <p className="text-[9px] text-gray-500 text-center mt-0.5">Complies with cybercrime.gov.in.</p>
+                      <span className="text-[10px] font-bold text-slate-950 text-center">Govt Aligned</span>
+                      <p className="text-[9px] text-slate-800 font-semibold text-center mt-0.5">Complies with cybercrime.gov.in.</p>
                     </div>
                   </div>
                 </div>
@@ -761,7 +761,7 @@ export default function App() {
                       {/* Content box */}
                       <div className="flex flex-col gap-1.5 w-full">
                         <div className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm ${
-                          isAssistant ? 'bg-gray-100 text-gray-800 rounded-tl-none' : 'bg-[#0B3C5D] text-white rounded-tr-none'
+                          isAssistant ? 'bg-slate-100 text-slate-950 font-bold rounded-tl-none' : 'bg-[#0B3C5D] text-white rounded-tr-none'
                         }`}>
                           {msg.content}
                         </div>
@@ -778,7 +778,7 @@ export default function App() {
                                     onChange={() => handleToggleEvidence(it.id)}
                                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
                                   />
-                                  <span className="text-gray-700 text-xs">{it.label}</span>
+                                  <span className="text-slate-900 font-bold text-xs">{it.label}</span>
                                 </label>
                               ))
                             ) : (
@@ -838,7 +838,7 @@ export default function App() {
                           ? "Evidence checklist open below. You can still message..." 
                           : "Tell me what happened — I'm here to help..."
                   }
-                  className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder:text-slate-400 py-1"
+                  className="flex-1 bg-transparent border-none outline-none text-xs text-slate-950 font-bold placeholder:text-slate-500 py-1"
                 />
 
                 {/* Voice Input Button */}
@@ -896,13 +896,13 @@ export default function App() {
               {/* Classification selectors */}
               <div className="grid grid-cols-1 gap-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Classification Override</label>
-                  <span className="text-[9.5px] text-gray-400 font-semibold italic">Based on National Cyber Crime Reporting Portal</span>
+                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">Classification Override</label>
+                  <span className="text-[9.5px] text-slate-600 font-bold italic">Based on National Cyber Crime Reporting Portal</span>
                 </div>
                 <select
                   value={classification?.subcategory_id || ''}
                   onChange={e => handleClassificationOverride(e.target.value)}
-                  className="glass-select w-full px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none"
+                  className="glass-select w-full px-3 py-2 rounded-lg text-xs font-bold text-slate-950 focus:outline-none"
                 >
                   <option value="" disabled>-- Select manual category override --</option>
                   {config.subcategories.map(sub => {
@@ -920,7 +920,7 @@ export default function App() {
               {/* AI Summary textarea */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Incident Summary</label>
+                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">Incident Summary</label>
                   {summaryGenerated && (
                     <button 
                       onClick={() => setEditingSummary(!editingSummary)}
@@ -942,9 +942,9 @@ export default function App() {
                     className="glass-field w-full p-3 rounded-lg text-xs focus:outline-none"
                   />
                 ) : (
-                  <div className="glass-tile rounded-lg p-3 text-xs text-gray-600 leading-relaxed min-h-[70px]">
+                  <div className="glass-tile rounded-lg p-3 text-xs text-slate-950 font-bold leading-relaxed min-h-[70px]">
                     {summary || (
-                      <span className="text-gray-400 italic">No summary generated. Fill in the chat inputs to compile your incident.</span>
+                      <span className="text-slate-600 font-bold italic">No summary generated. Fill in the chat inputs to compile your incident.</span>
                     )}
                   </div>
                 )}
@@ -953,7 +953,7 @@ export default function App() {
               {/* Timeline Editor */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Timeline Entries</label>
+                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">Timeline Entries</label>
                   {summaryGenerated && (
                     <button 
                       onClick={handleAddTimelineRow}
@@ -968,7 +968,7 @@ export default function App() {
                 <div className="glass-tile rounded-lg overflow-hidden">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold">
+                      <tr className="bg-slate-100 border-b border-slate-300 text-slate-950 font-black">
                         <th className="p-2.5 w-[30%]">Date/Time</th>
                         <th className="p-2.5 w-[60%]">Event Details</th>
                         <th className="p-2.5 w-[10%] text-center">Action</th>
@@ -983,7 +983,7 @@ export default function App() {
                                 type="text" 
                                 value={item.time} 
                                 onChange={e => handleTimelineChange(idx, 'time', e.target.value)}
-                                className="w-full px-2 py-1 bg-transparent hover:bg-gray-100 focus:bg-white focus:outline-none rounded text-xs font-semibold text-gray-700"
+                                className="w-full px-2 py-1 bg-transparent hover:bg-slate-100 focus:bg-white focus:outline-none rounded text-xs font-extrabold text-slate-950"
                               />
                             </td>
                             <td className="p-1">
@@ -991,7 +991,7 @@ export default function App() {
                                 type="text" 
                                 value={item.event} 
                                 onChange={e => handleTimelineChange(idx, 'event', e.target.value)}
-                                className="w-full px-2 py-1 bg-transparent hover:bg-gray-100 focus:bg-white focus:outline-none rounded text-xs text-gray-600"
+                                className="w-full px-2 py-1 bg-transparent hover:bg-slate-100 focus:bg-white focus:outline-none rounded text-xs font-bold text-slate-900"
                               />
                             </td>
                             <td className="p-1 text-center">
@@ -1006,7 +1006,7 @@ export default function App() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="3" className="p-4 text-center text-gray-400 italic">No timeline entries generated yet.</td>
+                          <td colSpan="3" className="p-4 text-center text-slate-600 font-bold italic">No timeline entries generated yet.</td>
                         </tr>
                       )}
                     </tbody>
@@ -1034,7 +1034,7 @@ export default function App() {
                 <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
                   <BookOpen className="w-4 h-4" />
                 </div>
-                <h2 className="text-xs font-bold text-gray-800 uppercase tracking-widest">Incident Playbook</h2>
+                <h2 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Incident Playbook</h2>
               </div>
             </div>
 
@@ -1046,8 +1046,8 @@ export default function App() {
                   <Lock className="w-4 h-4 text-gray-400" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">LOCKED</span>
-                  <p className="text-[11px] text-gray-500 leading-normal">
+                  <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest block mb-0.5">LOCKED</span>
+                  <p className="text-[11px] text-slate-800 font-semibold leading-normal">
                     Describe your case in chat. The AI will classify and unlock response steps automatically.
                   </p>
                 </div>
@@ -1068,14 +1068,14 @@ export default function App() {
                           ...expandedPlaybookSections,
                           [title]: !isExpanded
                         })}
-                        className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-55 hover:bg-gray-100 text-xs font-bold text-gray-800 text-left transition-all"
+                        className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-55 hover:bg-gray-100 text-xs font-bold text-slate-950 text-left transition-all"
                       >
                         <span>{title}</span>
-                        <ChevronRight className={`w-3.5 h-3.5 text-gray-500 transition-all ${isExpanded ? 'rotate-90' : ''}`} />
+                        <ChevronRight className={`w-3.5 h-3.5 text-slate-900 font-extrabold transition-all ${isExpanded ? 'rotate-90' : ''}`} />
                       </button>
                       
                       {isExpanded && (
-                        <div className="p-3 bg-white text-[11px] text-gray-600 leading-relaxed border-t border-gray-150 playbook-markdown">
+                        <div className="p-3 bg-white text-[11px] text-slate-900 font-semibold leading-relaxed border-t border-gray-150 playbook-markdown">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                         </div>
                       )}
@@ -1095,7 +1095,7 @@ export default function App() {
               <div className="p-1.5 bg-red-50 text-red-500 rounded-lg flex items-center justify-center">
                 <Bell className="w-4 h-4" />
               </div>
-              <h2 className="text-xs font-bold text-gray-800 uppercase tracking-widest">Trending Scam Alerts</h2>
+              <h2 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Trending Scam Alerts</h2>
             </div>
 
             {/* Slider cards container */}
@@ -1113,7 +1113,7 @@ export default function App() {
                       <div>
                         {/* Title & badge */}
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <h3 className="text-[12px] font-bold text-gray-950 leading-tight">{scam.scam_name}</h3>
+                          <h3 className="text-[12px] font-bold text-slate-950 leading-tight">{scam.scam_name}</h3>
                           <span className={`text-[8px] font-black text-white px-1.5 py-0.5 rounded uppercase tracking-wider ${
                             isCritical ? 'bg-red-500' : 'bg-amber-500'
                           }`}>
@@ -1122,10 +1122,10 @@ export default function App() {
                         </div>
 
                         {/* Description */}
-                        <p className="text-[10px] text-gray-600 leading-relaxed mb-3">{scam.description}</p>
+                        <p className="text-[10px] text-slate-900 font-bold leading-relaxed mb-3">{scam.description}</p>
 
                         {/* Phishing script box */}
-                        <div className="bg-[#F8FAFC] border-l-3 border-blue-500 rounded p-2 text-[9px] font-mono text-gray-700 leading-normal mb-2 max-h-[80px] overflow-y-auto custom-scrollbar">
+                        <div className="bg-[#F8FAFC] border-l-3 border-blue-500 rounded p-2 text-[9px] font-mono text-slate-950 font-bold leading-normal mb-2 max-h-[80px] overflow-y-auto custom-scrollbar">
                           <strong>Example Phishing Script:</strong><br />
                           {scam.example_script}
                         </div>

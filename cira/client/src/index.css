@@ -14,21 +14,20 @@
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: #061321;
-  color: #1D2731;
+  background: #EBF0F5;
+  color: #0f172a;
   overflow: hidden;
 }
 
-/* Glass workspace tokens. The light panels keep administrative content readable
-   while the dark ambient canvas gives the interface depth. */
+/* Glass workspace tokens. Light grey-blue ambient canvas. */
 .glass-app {
   position: relative;
   isolation: isolate;
   background:
-    radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.28), transparent 28rem),
-    radial-gradient(circle at 92% 15%, rgba(129, 140, 248, 0.23), transparent 25rem),
-    radial-gradient(circle at 58% 100%, rgba(20, 184, 166, 0.18), transparent 31rem),
-    linear-gradient(135deg, #061321 0%, #0a2133 46%, #102838 100%);
+    radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.15), transparent 28rem),
+    radial-gradient(circle at 92% 15%, rgba(129, 140, 248, 0.12), transparent 25rem),
+    radial-gradient(circle at 58% 100%, rgba(20, 184, 166, 0.10), transparent 31rem),
+    linear-gradient(135deg, #EBF0F5 0%, #F4F6F9 50%, #FFFFFF 100%);
 }
 
 .glass-app::before,
@@ -46,7 +45,7 @@ body {
   height: 22rem;
   top: 35%;
   left: 28%;
-  background: rgba(56, 189, 248, 0.11);
+  background: rgba(56, 189, 248, 0.06);
 }
 
 .glass-app::after {
@@ -54,7 +53,7 @@ body {
   height: 18rem;
   top: 45%;
   right: 3%;
-  background: rgba(167, 139, 250, 0.12);
+  background: rgba(167, 139, 250, 0.05);
 }
 
 .glass-header {
@@ -144,24 +143,52 @@ body {
   z-index: 0;
 }
 
-.glass-panel,
-.glass-tile {
-  border: 1px solid rgba(255, 255, 255, 0.66);
-  background: rgba(255, 255, 255, 0.64);
-  box-shadow: 0 16px 38px rgba(2, 12, 27, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.66);
-  backdrop-filter: blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
+.glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 16px 38px rgba(2, 12, 27, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
 }
 
 .glass-tile {
-  background: rgba(255, 255, 255, 0.52);
-  box-shadow: 0 8px 24px rgba(2, 12, 27, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.60);
+  border: 1px solid rgba(255, 255, 255, 0.70);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 8px 24px rgba(2, 12, 27, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.70);
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
 }
 
 .glass-tile:hover {
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 13px 28px rgba(2, 12, 27, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.84);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 13px 28px rgba(2, 12, 27, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.playbook-markdown {
+  color: #0f172a !important; /* slate-900 */
+  font-weight: 600 !important;
+}
+
+.playbook-markdown h1,
+.playbook-markdown h2,
+.playbook-markdown h3,
+.playbook-markdown h4 {
+  color: #020617 !important; /* slate-950 */
+  font-weight: 800 !important;
+}
+
+.playbook-markdown strong {
+  color: #020617 !important; /* slate-950 */
+  font-weight: 800 !important;
+}
+
+.playbook-markdown p,
+.playbook-markdown li,
+.playbook-markdown ul,
+.playbook-markdown ol {
+  color: #0f172a !important; /* slate-900 */
+  font-weight: 600 !important;
 }
 
 .glass-composer {
@@ -171,20 +198,20 @@ body {
   -webkit-backdrop-filter: blur(16px);
 }
 
-/* Requested black glass input: #070b14 at exactly 70% opacity. */
+/* Cohesive light glass input field */
 .glass-input {
   border: 1px solid rgba(148, 163, 184, 0.38);
-  background: rgba(7, 11, 20, 0.70);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(2, 12, 27, 0.15);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 6px 18px rgba(100, 116, 139, 0.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 .glass-input:focus-within {
-  border-color: rgba(56, 189, 248, 0.86);
-  background: rgba(7, 11, 20, 0.76);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.17), inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 12px 28px rgba(2, 12, 27, 0.25);
+  border-color: rgba(14, 116, 144, 0.75);
+  background: rgba(255, 255, 255, 0.90);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .glass-field,
